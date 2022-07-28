@@ -3,7 +3,12 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Brick
+  - Item
+  - Bomb
+  - Wall
+  - Brick_Move
   layers:
   - Default
   - TransparentFX
@@ -13,10 +18,10 @@ TagManager:
   - UI
   - Bomb
   - Check1
-  - 
-  - 
-  - 
-  - 
+  - Brick
+  - Item
+  - wall
+  - Player
   - 
   - 
   - 

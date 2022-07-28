@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 1106246994497674938}
   - component: {fileID: 4756709691198685546}
   - component: {fileID: 5576690854249177233}
+  - component: {fileID: 717056737968162152}
+  - component: {fileID: -2690701678646095557}
   m_Layer: 0
   m_Name: Explosion_End
   m_TagString: Untagged
@@ -58,7 +60,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.25, y: 0.25}
+  m_Size: {x: 0.1, y: 0.1}
   m_EdgeRadius: 0
 --- !u!95 &4756709691198685546
 Animator:
@@ -132,3 +134,28 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &717056737968162152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6671731131201317717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cec6feff486b03409e3fa6362f45dc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deadTime: 0.3
+--- !u!114 &-2690701678646095557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6671731131201317717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621c2f4869ee3174b90d848d2c6f8314, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

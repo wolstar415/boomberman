@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 415229520465169638}
   - component: {fileID: 415229520465169639}
   - component: {fileID: 415229520465169636}
+  - component: {fileID: -7888480875374974451}
+  - component: {fileID: -7825337871311574982}
   m_Layer: 0
   m_Name: Explosion_Start
   m_TagString: Untagged
@@ -58,7 +60,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.25, y: 0.25}
+  m_Size: {x: 0.1, y: 0.1}
   m_EdgeRadius: 0
 --- !u!95 &415229520465169639
 Animator:
@@ -132,3 +134,28 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-7888480875374974451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 415229520465169637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cec6feff486b03409e3fa6362f45dc2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deadTime: 0.3
+--- !u!114 &-7825337871311574982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 415229520465169637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621c2f4869ee3174b90d848d2c6f8314, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

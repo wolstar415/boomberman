@@ -1,73 +1,76 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Tilemaps;
+using Random = UnityEngine.Random;
 
 public class test1 : MonoBehaviour
 {
-    public Tilemap map1;
-
-
-    public LayerMask z1;
-
-    public GameObject[] p1;
-
-    public TileBase[] asd;
-    public Vector2 offset;
-
+    public GameObject testob;
     // Start is called before the first frame update
     void Start()
     {
-        var a = Physics2D.OverlapCircleAll(transform.position,100,z1);
-
-        // for (int i = 0; i < a.Length; i++)
-        // {
-        //     Vector3Int cc = Vector3Int.FloorToInt(a[i].transform.position);
-        //     var x = map1.GetTile(cc);
-        //     Debug.Log("뭐야");
-        //     Instantiate(p1, cc, quaternion.identity);
-        // }
-
-        for (int x = 0; x <= 15; x++)
+        SocketManager.inst.socket.OnUnityThread("Create", data =>
         {
-            for (int y =0; y <= 13; y++)
-            {
-                Vector3Int cell = map1.WorldToCell(new Vector3(x+offset.x,y+offset.y));
-                TileBase tile = map1.GetTile(cell);
-        
-                if (tile != null)
-                {
-                    int i = Array.IndexOf(this.asd, tile);
-                    var ffff = map1.CellToWorld(cell);
-                    ffff += new Vector3(0.5f, 0.5f);
-                    Instantiate(p1[i], ffff, quaternion.identity);
-                    
-                }
-            }
-        }
-        
-        map1.gameObject.SetActive(false);
+            GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[data.GetValue(0).GetInt32()], new Vector2(data.GetValue(1).GetSingle(), data.GetValue(2).GetSingle()), quaternion.identity);
+            NetworkManager.inst.players[data.GetValue(0).GetInt32()] = ob;
+            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].x = data.GetValue(1).GetSingle();
+            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].y = data.GetValue(2).GetSingle();
+
+
+        });
+        SocketManager.inst.socket.OnUnityThread("move", data =>
+        {
+            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].x = data.GetValue(1).GetSingle();
+            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].y = data.GetValue(2).GetSingle();
+
+
+        });
     }
 
-    IEnumerator Itest()
-    {
-        Vector3 xxx=test2.transform.position + Vector3.left;
-        while (test2.transform.position!=xxx)
-        {
-            var s = Vector3.MoveTowards(test2.transform.position,  xxx, 5*Time.deltaTime);
-            test2.transform.position = s;
-            yield return null;
-        }
-    }
-    
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.I))
         {
-            StartCoroutine(Itest());
+            GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[0], BoomberManager.inst.respawnPos[Random.Range(0,BoomberManager.inst.respawnPos.Count)], quaternion.identity);
+            BoomberManager.inst.player = ob;
+            BoomberManager.inst.moveMent.rigidbody = ob.GetComponent<Rigidbody2D>();
+            BoomberManager.inst.moveMent.ani = ob.GetComponentInChildren<Animator>();
+            BoomberManager.inst.IsStart = true;
+            BoomberManager.inst.playerIdx = 0;
+            SocketManager.inst.socket.Emit("Create",BoomberManager.inst.playerIdx,-12f,7f);
+        }
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[0], BoomberManager.inst.respawnPos[Random.Range(0,BoomberManager.inst.respawnPos.Count)], quaternion.identity);
+            BoomberManager.inst.player = ob;
+            BoomberManager.inst.moveMent.rigidbody = ob.GetComponent<Rigidbody2D>();
+            BoomberManager.inst.moveMent.ani = ob.GetComponentInChildren<Animator>();
+            BoomberManager.inst.IsStart = true;
+            BoomberManager.inst.playerIdx = 1;
+            SocketManager.inst.socket.Emit("Create",BoomberManager.inst.playerIdx,0f,7f);
+        }
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            testob.GetComponent<Rigidbody2D>().position = new Vector2(1, 0);
+        }
+
+
+        if (!BoomberManager.inst.IsStart)
+        {
+            return;
+        }
+        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
+        {
+            if (BoomberManager.inst.playerIdx == i)
+            {
+                continue;
+            }
+            if (NetworkManager.inst.players[i]!=null)
+            {
+                NetworkManager.inst.players[i].transform.position =  Vector3.Lerp(NetworkManager.inst.players[i].transform.position,NetworkManager.inst.playersPos[i],Time.deltaTime*20);
+            }
         }
     }
 }
