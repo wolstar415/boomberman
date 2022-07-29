@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2820716951838122064}
   - component: {fileID: 6567630836385610509}
   - component: {fileID: -9158390628721887637}
+  - component: {fileID: -6489725449409209475}
   m_Layer: 9
   m_Name: ItemSpeedIncrease
   m_TagString: Item
@@ -74,7 +75,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 2396e6f1016c2ea4d9ea4673fbed5ae5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -125,3 +126,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemType: 1
+--- !u!114 &-6489725449409209475
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377787236661985331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd234692a9a109e4dbf1d075f493a4d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

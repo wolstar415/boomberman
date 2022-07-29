@@ -36,7 +36,7 @@ public class Item : MonoBehaviour
                     break;
             }
             
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

@@ -12,6 +12,7 @@ public class Boom : MonoBehaviour
     public bool IsDead = false;
     public void BoomFunc(float FuseTime,int _power,int idx)
     {
+        IsDead = false;
         power = _power;
         playerIdx = idx;
         StartCoroutine(PlaceBomb(FuseTime));
@@ -29,7 +30,7 @@ public class Boom : MonoBehaviour
 
         Vector2 pos = transform.position;
 
-        GameObject explosion = Instantiate(BoomberManager.inst.explosionPreFabs[0],pos,quaternion.identity);
+        GameObject explosion = ObjectPooler.SpawnFromPool(BoomberManager.inst.explosionPreFabs[0],pos,quaternion.identity);
 
 
         Explode(pos, Vector2.up, BoomberManager.inst.Power);
@@ -51,7 +52,8 @@ public class Boom : MonoBehaviour
         }
 
         IsDead = true;
-        Destroy(gameObject);
+        gameObject.SetActive(false);
+        collider.isTrigger = true;
     }
     private void OnTriggerExit2D(Collider2D other)
     {
@@ -105,7 +107,7 @@ public class Boom : MonoBehaviour
             }
             else if (hit.CompareTag("Item"))
             {
-                Destroy(hit.gameObject);
+                hit.gameObject.SetActive(false);
             }
             else if (hit.CompareTag("Bomb"))
             {
@@ -120,7 +122,7 @@ public class Boom : MonoBehaviour
                     b.Dead();
                 }
                 
-                GameObject end_explosion = Instantiate(BoomberManager.inst.explosionPreFabs[1],pos,quaternion.identity);
+                GameObject end_explosion = ObjectPooler.SpawnFromPool(BoomberManager.inst.explosionPreFabs[1],pos,quaternion.identity);
                 end_explosion.transform.rotation = Quaternion.AngleAxis(SetDirection(direction)*Mathf.Rad2Deg, Vector3.forward);
                 int power = hit.GetComponent<Boom>().power;
                 if (direction == Vector2.up)
@@ -155,11 +157,11 @@ public class Boom : MonoBehaviour
 
         if (length > 1)
         {
-            explosion = Instantiate(BoomberManager.inst.explosionPreFabs[1], pos, quaternion.identity);
+            explosion = ObjectPooler.SpawnFromPool(BoomberManager.inst.explosionPreFabs[1], pos, quaternion.identity);
         }
         else
         {
-            explosion = Instantiate(BoomberManager.inst.explosionPreFabs[2],pos,quaternion.identity);
+            explosion = ObjectPooler.SpawnFromPool(BoomberManager.inst.explosionPreFabs[2],pos,quaternion.identity);
         }
         explosion.transform.rotation = Quaternion.AngleAxis(SetDirection(direction)*Mathf.Rad2Deg, Vector3.forward);
         

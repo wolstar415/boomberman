@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6464016720228852626}
   - component: {fileID: -4863192366984116069}
   - component: {fileID: -5919446997355867804}
+  - component: {fileID: 2507949476753555122}
   m_Layer: 8
   m_Name: Brick
   m_TagString: Brick
@@ -75,7 +76,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 4707ec6bcb84fed428e044aa80a5e3e1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -148,3 +149,15 @@ MonoBehaviour:
   ani: {fileID: -4863192366984116069}
   Idx: 0
   isMoving: 0
+--- !u!114 &2507949476753555122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6464016720228852625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd234692a9a109e4dbf1d075f493a4d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

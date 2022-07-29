@@ -9,8 +9,7 @@ public class Explosion : MonoBehaviour
     {
         if (col.CompareTag("Player"))
         {
-            BoomberManager.inst.moveMent.ani.SetBool("IsDead",true);
-            Debug.Log("사망");
+            BoomberManager.inst.Dead();
         }
     }
 }

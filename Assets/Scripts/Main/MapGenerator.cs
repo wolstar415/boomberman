@@ -18,65 +18,77 @@ public class MapInfo
 public class MapGenerator : MonoBehaviour
 {
     public Tilemap[] maps;
-    public GameObject[] obs;
+    public String[] tilePrefabs;
     public TileBase[] tiles;
     public TileBase respawnTile;
-    public Vector2 offset;
+    public Vector3 offset;
     public List<Vector3> temp_pos;
     public List<int> itemList;
     public List<int> itemListTemp;
     public List<MapInfo> mapInfos;
+    public List<GameObject> tileObs;
 
     // Start is called before the first frame update
     void Start()
     {
+        
+        MapCreate();
+    }
+
+    public void MapCreate()
+    {
         temp_pos.Clear();
         itemList.Clear();
         int itemAmount = 0;
-        for (int x = 0; x <= 15; x++)
+        foreach(Vector3Int pos in maps[BoomberManager.inst.mapIdx].cellBounds.allPositionsWithin)
         {
-            for (int y = 0; y <= 13; y++)
+            //offset 부분
+            
+            
+            // 해당 좌표에 타일이 없으면 넘어간다.
+            if(!maps[BoomberManager.inst.mapIdx].HasTile(pos)) continue;
+            // 해당 좌표의 타일을 얻는다.
+            TileBase tile = maps[BoomberManager.inst.mapIdx].GetTile(pos);
+            Vector3 createPos = maps[BoomberManager.inst.mapIdx].CellToWorld(pos)+offset;
+
+            if (tile==respawnTile)
             {
-                Vector3Int cell = maps[BoomberManager.inst.mapIdx].WorldToCell(new Vector3(x + offset.x, y + offset.y));
-                TileBase tile = maps[BoomberManager.inst.mapIdx].GetTile(cell);
+                temp_pos.Add(createPos);
+                continue;
+            }
+            int idx = 0;
 
-                if (tile == null)
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                if (tile == tiles[i])
                 {
-                    continue;
+                    idx = i;
+                    break;
                 }
-
-                if (tile==respawnTile)
-                {
-                    temp_pos.Add(maps[BoomberManager.inst.mapIdx].CellToWorld(cell) + new Vector3(0.5f, 0.5f));
-                    continue;
-                }
-                int idx = 0;
-
-                for (int i = 0; i < tiles.Length; i++)
-                {
-                    if (tile == tiles[i])
-                    {
-                        idx = i;
-                        break;
-                    }
-                }
-                var pos = maps[BoomberManager.inst.mapIdx].CellToWorld(cell);
-                pos += new Vector3(0.5f, 0.5f);
-                GameObject Brick= Instantiate(obs[idx], pos, quaternion.identity);
-                if (Brick.TryGetComponent(out Brick b))
-                {
-                    b.Idx = itemAmount;
-                    itemAmount++;
-                    itemList.Add(0);
-                }
-                
+            }
+            GameObject ob= ObjectPooler.SpawnFromPool(tilePrefabs[idx], createPos, quaternion.identity);
+            tileObs.Add(ob);
+            if (ob.TryGetComponent(out Brick b))
+            {
+                b.Idx = itemAmount;
+                itemAmount++;
+                itemList.Add(0);
             }
         }
-
         BoomberManager.inst.respawnPos = temp_pos.ToList();
         maps[BoomberManager.inst.mapIdx].gameObject.SetActive(false);
         ItemSetting();
     }
+
+    public void MapDestory()
+    {
+        foreach (var ob in tileObs)
+        {
+            ob.SetActive(false);
+        }
+        tileObs.Clear();
+    }
+
 
     public void ItemSetting()
     {
@@ -123,4 +135,5 @@ public class MapGenerator : MonoBehaviour
 
         BoomberManager.inst.itemIdx = itemList.ToList();
     }
+    
 }

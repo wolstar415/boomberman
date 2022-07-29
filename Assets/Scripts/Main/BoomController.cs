@@ -6,11 +6,16 @@ using UnityEngine;
 
 public class BoomController : MonoBehaviour
 {
-    public GameObject bombPrefab;
+    
 
 
     private void Update()
     {
+        if (BoomberManager.inst.IsStart == false||BoomberManager.inst.IsDead)
+        {
+            return;
+        }
+        
         if (BoomberManager.inst.bombsRemaining >0&& Input.GetKeyDown(KeyCode.Space))
         {
             
@@ -27,7 +32,7 @@ public class BoomController : MonoBehaviour
        
             
             BoomberManager.inst.bombsRemaining--;
-            GameObject bomb = Instantiate(bombPrefab, position, quaternion.identity);
+            GameObject bomb = ObjectPooler.SpawnFromPool(BoomberManager.inst.bombPrefab, position, quaternion.identity);
             if (bomb.TryGetComponent(out Boom component))
             {
                 component.BoomFunc(BoomberManager.inst.bombFuseTime,BoomberManager.inst.Power,BoomberManager.inst.playerIdx);

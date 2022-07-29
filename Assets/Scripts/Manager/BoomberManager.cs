@@ -8,6 +8,7 @@ public class BoomberManager : MonoBehaviour
     public static BoomberManager inst;
 
     public bool IsStart = false;
+    public bool IsDead = false;
     [Header("플레이어")] 
     public GameObject player;
     public int playerIdx;
@@ -18,10 +19,8 @@ public class BoomberManager : MonoBehaviour
     public float bombFuseTime = 3f;
     public int bombsRemaining;
     [Space(20)]
-    public GameObject[] explosionPreFabs;
     public List<Vector3> respawnPos;
 
-    public GameObject[] Items;
     public List<int> itemIdx;
 
     [Header("Map")] public int mapIdx;
@@ -36,6 +35,10 @@ public class BoomberManager : MonoBehaviour
     [SerializeField] private int speedMax;
     [SerializeField] private int bombMax;
 
+    [Header("프리팹")]
+    public string bombPrefab;
+    public string[] Items;
+    public string[] explosionPreFabs;
     [Header("스크립트")] 
     public MoveMentController moveMent;
     public MapGenerator mapGenerator;
@@ -51,6 +54,24 @@ public class BoomberManager : MonoBehaviour
         {
             Power = powerMax;
         }
+    }
+
+    public void Dead()
+    {
+        if (IsDead)
+        {
+            return;
+        }
+        StartCoroutine(CoDead());
+    }
+
+    IEnumerator CoDead()
+    {
+        moveMent.ani.SetBool("IsDead",true);
+        IsDead = true;
+        player.GetComponent<CircleCollider2D>().enabled = false;
+        yield return YieldInstructionCache.WaitForSeconds(1.5f);
+        Destroy(player);
     }
 
     public void SpeedUp()

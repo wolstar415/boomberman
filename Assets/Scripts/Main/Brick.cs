@@ -59,8 +59,8 @@ public class Brick : MonoBehaviour
         int item = BoomberManager.inst.itemIdx[Idx];
         if (item >= 1)
         {
-            Instantiate(BoomberManager.inst.Items[item], transform.position, quaternion.identity);
+            ObjectPooler.SpawnFromPool(BoomberManager.inst.Items[item], transform.position, quaternion.identity);
         }
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }

@@ -28,7 +28,7 @@ public class MoveMentController : MonoBehaviour
     void Update()
     {
 
-        if (BoomberManager.inst.IsStart == false)
+        if (BoomberManager.inst.IsStart == false||BoomberManager.inst.IsDead)
         {
             return;
         }

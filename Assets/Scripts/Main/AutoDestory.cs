@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,9 +7,15 @@ public class AutoDestory : MonoBehaviour
 {
     [SerializeField]
     private float deadTime = 1f;
-    void Start()
+
+    private void OnEnable()
     {
-        Destroy(gameObject,deadTime);
+        Invoke(nameof(DestroyFunc),deadTime);
+    }
+
+    void DestroyFunc()
+    {
+        gameObject.SetActive(false);
     }
 
 }

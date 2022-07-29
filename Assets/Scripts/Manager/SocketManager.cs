@@ -26,8 +26,10 @@ public class SocketManager : MonoBehaviour
         }
     }
 
+    
 
-    void Start()
+
+     void Start()
     {
         var uri = new Uri("http://127.0.0.1:7777");
         socket = new SocketIOUnity(uri, new SocketIOOptions
@@ -44,12 +46,12 @@ public class SocketManager : MonoBehaviour
 
         socket.OnConnected += (sender, e) =>
         {
-            UnityMainThreadDispatcher.Instance().Enqueue(() => { SceneManager.LoadScene("Loby"); });
+            UnityMainThreadDispatcher.Instance().Enqueue(() => { SceneManager.LoadScene("Main"); });
         };
         socket.OnDisconnected += (sender, e) => { Debug.Log("disconnect: " + e); };
         socket.Disconnect();
-        
     }
+
 
     [ContextMenu ("강제로끊기")]
     public void dis()
