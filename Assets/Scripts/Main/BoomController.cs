@@ -8,7 +8,17 @@ public class BoomController : MonoBehaviour
 {
     
 
-
+    public void Start()
+    {
+        SocketManager.inst.socket.OnUnityThread("Bomb", data =>
+        {
+            GameObject bomb = ObjectPooler.SpawnFromPool(BoomberManager.inst.bombPrefab, new Vector3(data.GetValue(3).GetSingle(),data.GetValue(4).GetSingle()), quaternion.identity);
+            if (bomb.TryGetComponent(out Boom component))
+            {
+                component.BoomFunc(data.GetValue(0).GetSingle(),data.GetValue(1).GetInt32(),data.GetValue(2).GetInt32());
+            }
+        });
+    }
     private void Update()
     {
         if (BoomberManager.inst.IsStart == false||BoomberManager.inst.IsDead)
@@ -16,7 +26,7 @@ public class BoomController : MonoBehaviour
             return;
         }
         
-        if (BoomberManager.inst.bombsRemaining >0&& Input.GetKeyDown(KeyCode.Space))
+        if (!BoomberManager.inst.playChat.isFocused&&BoomberManager.inst.bombsRemaining >0&& Input.GetKeyDown(KeyCode.Space))
         {
             
             
@@ -33,6 +43,7 @@ public class BoomController : MonoBehaviour
             
             BoomberManager.inst.bombsRemaining--;
             GameObject bomb = ObjectPooler.SpawnFromPool(BoomberManager.inst.bombPrefab, position, quaternion.identity);
+            SocketManager.inst.socket.Emit("Bomb",GameManager.inst.room,BoomberManager.inst.bombFuseTime,BoomberManager.inst.Power,BoomberManager.inst.playerIdx,position.x,position.y);
             if (bomb.TryGetComponent(out Boom component))
             {
                 component.BoomFunc(BoomberManager.inst.bombFuseTime,BoomberManager.inst.Power,BoomberManager.inst.playerIdx);

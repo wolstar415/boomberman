@@ -10,15 +10,7 @@ public class test1 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SocketManager.inst.socket.OnUnityThread("Create", data =>
-        {
-            GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[data.GetValue(0).GetInt32()], new Vector2(data.GetValue(1).GetSingle(), data.GetValue(2).GetSingle()), quaternion.identity);
-            NetworkManager.inst.players[data.GetValue(0).GetInt32()] = ob;
-            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].x = data.GetValue(1).GetSingle();
-            NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].y = data.GetValue(2).GetSingle();
-
-
-        });
+        
         SocketManager.inst.socket.OnUnityThread("move", data =>
         {
             NetworkManager.inst.playersPos[data.GetValue(0).GetInt32()].x = data.GetValue(1).GetSingle();
@@ -57,20 +49,5 @@ public class test1 : MonoBehaviour
         }
 
 
-        if (!BoomberManager.inst.IsStart)
-        {
-            return;
-        }
-        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
-        {
-            if (BoomberManager.inst.playerIdx == i)
-            {
-                continue;
-            }
-            if (NetworkManager.inst.players[i]!=null)
-            {
-                NetworkManager.inst.players[i].transform.position =  Vector3.Lerp(NetworkManager.inst.players[i].transform.position,NetworkManager.inst.playersPos[i],Time.deltaTime*20);
-            }
-        }
     }
 }

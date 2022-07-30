@@ -29,6 +29,7 @@ public class Brick : MonoBehaviour
         
         isMoving = true;
         StartCoroutine(CoMove(direction));
+        
     }
 
     IEnumerator CoMove(Vector3 direction)

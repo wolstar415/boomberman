@@ -226,7 +226,7 @@ public class LobyManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        SocketManager.inst.socket.OnUnityThread("LobyChat", data =>
+        SocketManager.inst.socket.OnUnityThread("LobyChatGet", data =>
         {
             GameObject ob = ObjectPooler.SpawnFromPool("LobyChat",Vector3.zero);
             ob.GetComponent<TextMeshProUGUI>().text = $"{data.GetValue(0).GetString()} : {data.GetValue(1).GetString()}";
@@ -240,7 +240,14 @@ public class LobyManager : MonoBehaviour
             GameManager.inst.CreateRoomOb.SetActive(false);
             GameManager.inst.room = lobyCreateRoomField.text;
             RoomManager.inst.HostStartFunc();
-            
+            GameManager.inst.characterIdx = 0;
+            GameManager.inst.isPlaying = false;
+            GameManager.inst.isReady = false;
+            RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
+            RoomManager.inst.ArrowSet(0);
+            BoomberManager.inst.gameWait = 0;
+
+
         });
         SocketManager.inst.socket.OnUnityThread("RoomReset", data =>
         {
@@ -265,6 +272,12 @@ public class LobyManager : MonoBehaviour
             string s = data.GetValue(1).ToString();
             RoomManager.inst.check = JsonConvert.DeserializeObject<RoomInfo>(s);
             RoomManager.inst.SlotReset(RoomManager.inst.check);
+            GameManager.inst.characterIdx = 0;
+            GameManager.inst.isPlaying = false;
+            GameManager.inst.isReady = false;
+            RoomManager.inst.ArrowSet(0);
+            BoomberManager.inst.gameWait = 0;
+
         });
     }
 

@@ -27,12 +27,80 @@ public class MapGenerator : MonoBehaviour
     public List<int> itemListTemp;
     public List<MapInfo> mapInfos;
     public List<GameObject> tileObs;
+    public List<GameObject> brickObs;
 
+    public GameObject groundTiles;
+    public GameObject outWallTiles;
+    
+    public List<int> randomPos;
+    public List<int> randomPosTemp;
     // Start is called before the first frame update
     void Start()
     {
         
-        MapCreate();
+        //MapCreate();
+    }
+
+    public void StartFunc()
+    {
+        GameManager.inst.roomOb.SetActive(false);
+        GameManager.inst.playOb.SetActive(true);
+        foreach (var tile in tileObs)
+        {
+            tile.SetActive(true);
+        }
+        groundTiles.SetActive(true);
+        outWallTiles.SetActive(true);
+        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
+        {
+            if (NetworkManager.inst.players[i] != null)
+            {
+                NetworkManager.inst.players[i].SetActive(true);
+            }
+        }
+        BoomberManager.inst.IsStart = true;
+        GameManager.inst.isPlaying = true;
+    }
+
+    public void EndFunc()
+    {
+        BoomberManager.inst.StopAllCoroutines();
+        BoomberManager.inst.timeText.text = "GameOver";
+        
+        MapDestory();
+        groundTiles.SetActive(false);
+        outWallTiles.SetActive(false);
+        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
+        {
+            if (NetworkManager.inst.players[i] != null)
+            {
+                Destroy(NetworkManager.inst.players[i]);
+                NetworkManager.inst.players[i] = null;
+            }
+        }
+        BoomberManager.inst.IsStart = false;
+        GameManager.inst.roomOb.SetActive(true);
+        GameManager.inst.playOb.SetActive(false);
+        GameManager.inst.isPlaying = false;
+        BoomberManager.inst.gameWait = 0;
+    }
+
+    public void CharacterRandomFunc()
+    {
+        randomPos.Clear();
+        randomPosTemp.Clear();
+
+        for (int i = 0; i < temp_pos.Count; i++)
+        {
+            randomPosTemp.Add(i);
+        }
+
+        while (randomPosTemp.Count!=0)
+        {
+            int ran = Random.Range(0, randomPosTemp.Count);
+            randomPos.Add(randomPosTemp[ran]);
+            randomPosTemp.RemoveAt(ran);
+        }
     }
 
     public void MapCreate()
@@ -40,16 +108,16 @@ public class MapGenerator : MonoBehaviour
         temp_pos.Clear();
         itemList.Clear();
         int itemAmount = 0;
-        foreach(Vector3Int pos in maps[BoomberManager.inst.mapIdx].cellBounds.allPositionsWithin)
+        foreach(Vector3Int pos in maps[BoomberManager.inst.mapIdxGo].cellBounds.allPositionsWithin)
         {
             //offset 부분
             
             
             // 해당 좌표에 타일이 없으면 넘어간다.
-            if(!maps[BoomberManager.inst.mapIdx].HasTile(pos)) continue;
+            if(!maps[BoomberManager.inst.mapIdxGo].HasTile(pos)) continue;
             // 해당 좌표의 타일을 얻는다.
-            TileBase tile = maps[BoomberManager.inst.mapIdx].GetTile(pos);
-            Vector3 createPos = maps[BoomberManager.inst.mapIdx].CellToWorld(pos)+offset;
+            TileBase tile = maps[BoomberManager.inst.mapIdxGo].GetTile(pos);
+            Vector3 createPos = maps[BoomberManager.inst.mapIdxGo].CellToWorld(pos)+offset;
 
             if (tile==respawnTile)
             {
@@ -68,20 +136,22 @@ public class MapGenerator : MonoBehaviour
             }
             GameObject ob= ObjectPooler.SpawnFromPool(tilePrefabs[idx], createPos, quaternion.identity);
             tileObs.Add(ob);
+            ob.SetActive(false);
             if (ob.TryGetComponent(out Brick b))
             {
                 b.Idx = itemAmount;
                 itemAmount++;
                 itemList.Add(0);
+                brickObs.Add(ob);
             }
         }
         BoomberManager.inst.respawnPos = temp_pos.ToList();
-        maps[BoomberManager.inst.mapIdx].gameObject.SetActive(false);
-        ItemSetting();
+        //maps[GameManager.inst.mapIdx].gameObject.SetActive(false);
     }
 
     public void MapDestory()
     {
+        brickObs.Clear();
         foreach (var ob in tileObs)
         {
             ob.SetActive(false);
@@ -93,9 +163,9 @@ public class MapGenerator : MonoBehaviour
     public void ItemSetting()
     {
         itemListTemp.Clear();
-        int powerCnt = mapInfos[BoomberManager.inst.mapIdx].itemPowerCnt;
-        int bombCnt = mapInfos[BoomberManager.inst.mapIdx].itemBombCnt;
-        int speedCnt = mapInfos[BoomberManager.inst.mapIdx].itemSpeedCnt;
+        int powerCnt = mapInfos[BoomberManager.inst.mapIdxGo].itemPowerCnt;
+        int bombCnt = mapInfos[BoomberManager.inst.mapIdxGo].itemBombCnt;
+        int speedCnt = mapInfos[BoomberManager.inst.mapIdxGo].itemSpeedCnt;
 
         itemListTemp = itemList.ToList();
         for (int i = 0; i < powerCnt; i++)

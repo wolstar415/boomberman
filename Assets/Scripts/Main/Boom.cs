@@ -33,10 +33,10 @@ public class Boom : MonoBehaviour
         GameObject explosion = ObjectPooler.SpawnFromPool(BoomberManager.inst.explosionPreFabs[0],pos,quaternion.identity);
 
 
-        Explode(pos, Vector2.up, BoomberManager.inst.Power);
-        Explode(pos, Vector2.down, BoomberManager.inst.Power);
-        Explode(pos, Vector2.left, BoomberManager.inst.Power);
-        Explode(pos, Vector2.right, BoomberManager.inst.Power);
+        Explode(pos, Vector2.up, power);
+        Explode(pos, Vector2.down, power);
+        Explode(pos, Vector2.left, power);
+        Explode(pos, Vector2.right, power);
         Dead();
     }
 
@@ -111,7 +111,7 @@ public class Boom : MonoBehaviour
             }
             else if (hit.CompareTag("Bomb"))
             {
-                length += BoomberManager.inst.Power;
+                length += hit.GetComponent<Boom>().power;
 
                 if (hit.transform.TryGetComponent(out Boom b))
                 {

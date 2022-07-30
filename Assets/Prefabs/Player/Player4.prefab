@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 4931998356256663559}
   - component: {fileID: 4931998356256663556}
   m_Layer: 0
-  m_Name: Move
+  m_Name: ani
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -193,6 +193,7 @@ GameObject:
   - component: {fileID: 4931998356859764049}
   - component: {fileID: 4931998356859764048}
   - component: {fileID: 4931998356859764051}
+  - component: {fileID: -5861715493593976118}
   m_Layer: 11
   m_Name: Player4
   m_TagString: Player
@@ -255,6 +256,21 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.49
+--- !u!114 &-5861715493593976118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4931998356859764012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4d1b25074b507b459096b5fff79d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chatText: {fileID: 2360948555887707678}
+  chatOb: {fileID: 6687850325748037549}
+  ani: {fileID: 4931998356256663556}
 --- !u!1 &5205063877851250210
 GameObject:
   m_ObjectHideFlags: 0
@@ -554,7 +570,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_TargetDisplay: 0
 --- !u!114 &3312108019804832892
 MonoBehaviour:

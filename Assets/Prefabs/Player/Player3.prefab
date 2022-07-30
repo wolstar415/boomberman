@@ -299,7 +299,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 99
   m_TargetDisplay: 0
 --- !u!114 &964633199718449518
 MonoBehaviour:
@@ -353,7 +353,7 @@ GameObject:
   - component: {fileID: 4931998356256663559}
   - component: {fileID: 4931998356256663556}
   m_Layer: 0
-  m_Name: Move
+  m_Name: ani
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -457,6 +457,7 @@ GameObject:
   - component: {fileID: 4931998356859764049}
   - component: {fileID: 4931998356859764048}
   - component: {fileID: 4931998356859764051}
+  - component: {fileID: 7512241207426372930}
   m_Layer: 11
   m_Name: Player3
   m_TagString: Player
@@ -519,6 +520,21 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.49
+--- !u!114 &7512241207426372930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4931998356859764012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4d1b25074b507b459096b5fff79d148, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chatText: {fileID: 1284284345923740746}
+  chatOb: {fileID: 3188593538216334092}
+  ani: {fileID: 4931998356256663556}
 --- !u!1 &8943430273697551279
 GameObject:
   m_ObjectHideFlags: 0

@@ -21,6 +21,10 @@ public class GameManager : MonoBehaviour
     public int victory;
     public int defeat;
     private bool _RoomHost;
+    public int characterIdx = 0;
+    public int mapIdx = 0;
+    public bool isPlaying;
+    public bool isReady;
 
     [Header("패널들")] 
     public GameObject loginOb;
@@ -46,6 +50,7 @@ public class GameManager : MonoBehaviour
             RoomManager.inst.mapStartBtn.SetActive(value);
             RoomManager.inst.mapSelectBtn.SetActive(value);
             _RoomHost = value;
+            RoomManager.inst.mapReadyBtn.SetActive(!value);
         }
     }
 

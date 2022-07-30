@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class MoveMentController : MonoBehaviour
@@ -40,8 +41,11 @@ public class MoveMentController : MonoBehaviour
             ani.SetFloat(Horizontal,0);
             ani.SetFloat(Vertical,1);
             ani.SetBool(IsMoving,true);
-            
-            
+            NetworkManager.inst.myData.horizontal = 0;
+            NetworkManager.inst.myData.vertical = 1;
+            NetworkManager.inst.myData.isMoving = true;
+
+
         }
         else if (Input.GetKey(KeyCode.DownArrow))
         {
@@ -50,6 +54,9 @@ public class MoveMentController : MonoBehaviour
             ani.SetFloat(Vertical,-1);
             SetDirection(Vector2.down);
             ani.SetBool(IsMoving,true);
+            NetworkManager.inst.myData.horizontal = 0;
+            NetworkManager.inst.myData.vertical = -1;
+            NetworkManager.inst.myData.isMoving = true;
         }
         else if (Input.GetKey(KeyCode.LeftArrow))
         {
@@ -58,6 +65,9 @@ public class MoveMentController : MonoBehaviour
             ani.SetFloat(Vertical,0);
             ani.SetBool(IsMoving,true);
             SetDirection(Vector2.left);
+            NetworkManager.inst.myData.horizontal = -1;
+            NetworkManager.inst.myData.vertical = 0;
+            NetworkManager.inst.myData.isMoving = true;
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
@@ -66,6 +76,9 @@ public class MoveMentController : MonoBehaviour
             ani.SetFloat(Vertical,0);
             ani.SetBool(IsMoving,true);
             SetDirection(Vector2.right);
+            NetworkManager.inst.myData.horizontal = 1;
+            NetworkManager.inst.myData.vertical = 0;
+            NetworkManager.inst.myData.isMoving = true;
         }
         else
         {
@@ -74,6 +87,10 @@ public class MoveMentController : MonoBehaviour
                 
                 ani.SetBool(IsMoving,false);
                 SetDirection(Vector2.zero);
+                NetworkManager.inst.myData.isMoving = false;
+                string s = JsonConvert.SerializeObject(NetworkManager.inst.myData);
+                SocketManager.inst.socket.Emit("Playmove",GameManager.inst.room,BoomberManager.inst.playerIdx,s);
+
             }
             
         }
@@ -111,6 +128,7 @@ public class MoveMentController : MonoBehaviour
                                     if (b.isMoving == false)
                                     {
                                         b.Move(direction);
+                                        SocketManager.inst.socket.Emit("BrickMove",GameManager.inst.room,direction.x,direction.y,b.Idx);
                                     }
                                 }
                             }
@@ -144,6 +162,29 @@ public class MoveMentController : MonoBehaviour
         {
             return;
         }
+        
+        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
+        {
+            if (BoomberManager.inst.playerIdx == i)
+            {
+                continue;
+            }
+            if (NetworkManager.inst.players[i]!=null)
+            {
+                Vector3 pos = new Vector3(NetworkManager.inst.playerDatas[i].pos_x,NetworkManager.inst.playerDatas[i].pos_y);
+                float horizontal = NetworkManager.inst.playerDatas[i].horizontal;
+                float vertical = NetworkManager.inst.playerDatas[i].vertical;
+                bool move=NetworkManager.inst.playerDatas[i].isMoving;
+                if (NetworkManager.inst.players[i].TryGetComponent(out CharacterInfo info))
+                {
+                    info.ani.SetFloat(Horizontal,horizontal);
+                    info.ani.SetFloat(Vertical,vertical);
+                    info.ani.SetBool(IsMoving,move);
+                }
+                NetworkManager.inst.players[i].transform.position =  Vector3.Lerp(NetworkManager.inst.players[i].transform.position,pos,Time.deltaTime*20);
+            }
+        }
+        
         if (direction==Vector2.zero)
         {
             return;
@@ -151,8 +192,36 @@ public class MoveMentController : MonoBehaviour
         Vector2 position = rigidbody.position;
         Vector2 translation = direction * (    BoomberManager.inst.Speed*Time.fixedDeltaTime);
         rigidbody.MovePosition(position + translation);
+        var position1 = rigidbody.position;
+        NetworkManager.inst.myData.pos_x = position1.x;
+        NetworkManager.inst.myData.pos_y = position1.y;
+        string s = JsonConvert.SerializeObject(NetworkManager.inst.myData);
+        SocketManager.inst.socket.Emit("Playmove",GameManager.inst.room,BoomberManager.inst.playerIdx,s);
         
-        SocketManager.inst.socket.Emit("move",BoomberManager.inst.playerIdx,BoomberManager.inst.player.transform.position.x,BoomberManager.inst.player.transform.position.y);
+        
+    }
+
+    public void Start()
+    {
+        SocketManager.inst.socket.OnUnityThread("Playmove", data =>
+        {
+
+            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()] =
+                JsonConvert.DeserializeObject<PlayerData>(data.GetValue(1).ToString());
+
+        });
+        SocketManager.inst.socket.OnUnityThread("BrickMove", data =>
+        {
+
+            GameObject ob = BoomberManager.inst.mapGenerator.brickObs[data.GetValue(2).GetInt32()];
+            if (ob.TryGetComponent(out Brick b))
+            {
+                b.Move(new Vector3(data.GetValue(0).GetSingle(),data.GetValue(1).GetSingle()));
+            }
+
+
+        });
+        
     }
 
     private void SetDirection(Vector2 newDirection)
