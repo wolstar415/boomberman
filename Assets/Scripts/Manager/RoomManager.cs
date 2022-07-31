@@ -478,7 +478,7 @@ public class RoomManager : MonoBehaviour
     
     public void OnEndEditEventMethod()
     {
-        if (GameManager.inst.input.actions["ChatEnd"].triggered)
+        if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             UpdateChat();
             roomChatField.ActivateInputField();

@@ -125,8 +125,8 @@ public class MoveMentController : MonoBehaviour
                                 if (b.isMoving == false)
                                 {
                                     b.Move(direction);
-                                    SocketManager.inst.socket.Emit("BrickMove", GameManager.inst.room, direction.x,
-                                        direction.y, b.Idx);
+                                    var position = b.transform.position;
+                                    SocketManager.inst.socket.Emit("BrickMove", GameManager.inst.room, position.x,position.y,direction.x,direction.y, b.Idx);
                                 }
                             }
                         }
@@ -201,10 +201,11 @@ public class MoveMentController : MonoBehaviour
         });
         SocketManager.inst.socket.OnUnityThread("BrickMove", data =>
         {
-            GameObject ob = BoomberManager.inst.mapGenerator.brickObs[data.GetValue(2).GetInt32()];
+            GameObject ob = BoomberManager.inst.mapGenerator.brickObs[data.GetValue(0).GetInt32()];
             if (ob.TryGetComponent(out Brick b))
             {
-                b.Move(new Vector3(data.GetValue(0).GetSingle(), data.GetValue(1).GetSingle()));
+                b.transform.position = new Vector3(data.GetValue(1).GetSingle(), data.GetValue(2).GetSingle());
+                b.Move(new Vector3(data.GetValue(3).GetSingle(), data.GetValue(4).GetSingle()));
             }
         });
     }

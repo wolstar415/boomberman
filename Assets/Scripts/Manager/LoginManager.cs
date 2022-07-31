@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
@@ -98,7 +99,7 @@ public class LoginManager : MonoBehaviour
 
     public void LoginEnter()
     {
-        if(GameManager.inst.input.actions["ChatEnd"].triggered)
+        if(GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             LoginBtn();
         }
@@ -106,7 +107,7 @@ public class LoginManager : MonoBehaviour
 
     public void CreateEnter()
     {
-        if(GameManager.inst.input.actions["ChatEnd"].triggered)
+        if(GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             CreateBtn();
         }
@@ -115,12 +116,12 @@ public class LoginManager : MonoBehaviour
 
 
 
-    public async void OnTab()
+    public async UniTaskVoid OnTab()
     {
         
         if (GameManager.inst.loginOb.activeSelf)
         {
-            await Task.Delay(1);
+            await Task.Yield();
             if (idFiled.isFocused)
             {
                 passwordFiled.Select();

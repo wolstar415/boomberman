@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -353,13 +354,12 @@ public class BoomberManager : MonoBehaviour
         
     }
     
-    public async void OnEndEditEventMethod()
+    public void OnEndEditEventMethod()
     {
-        if (GameManager.inst.input.actions["ChatEnd"].triggered)
+        if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             UpdateChat();
-            await Task.Delay(1);
-            playChat.gameObject.SetActive(false);
+            
 
         }
     }
@@ -375,7 +375,7 @@ public class BoomberManager : MonoBehaviour
         GameManager.inst.roomOb.SetActive(false);
         GameManager.inst.lobyOb.SetActive(true);
     }
-    public void UpdateChat()
+    public async UniTaskVoid UpdateChat()
         //채팅을 입력시 이벤트
     {
         if (playChat.text.Equals(""))
@@ -387,6 +387,8 @@ public class BoomberManager : MonoBehaviour
         Chat(GameManager.inst.Id,playChat.text,playerIdx);
         SocketManager.inst.socket.Emit("PlayChat", GameManager.inst.room,GameManager.inst.Id,playChat.text,playerIdx);
         playChat.text = "";
+        await Task.Yield();
+        playChat.gameObject.SetActive(false);
     }
     public void Chat(string name,string s, int idx)
     {

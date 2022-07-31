@@ -3831,7 +3831,6 @@ MonoBehaviour:
   loadingOb: {fileID: 7688374419096533346}
   warningOb: {fileID: 657164134}
   warningText: {fileID: 760397373}
-  input: {fileID: 131361669}
   Id: 
   room: 
   roomSlot: 0

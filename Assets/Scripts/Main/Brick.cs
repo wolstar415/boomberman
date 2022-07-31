@@ -38,14 +38,15 @@ public class Brick : MonoBehaviour
         float t = 0;
         while (pos!=transform.position)
         {
+            if (t >= 1f||isMoving==false)
+            {
+                yield break;
+            }
             Vector3 movePos = Vector3.MoveTowards(transform.position, pos, Time.deltaTime * 5);
             transform.position = movePos;
             t += Time.deltaTime;
 
-            if (t >= 2f)
-            {
-                yield break;
-            }
+            
             yield return null;
         }
 

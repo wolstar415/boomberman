@@ -14,7 +14,8 @@ public class GameManager : MonoBehaviour
     public GameObject loadingOb;
     public GameObject warningOb;
     public TextMeshProUGUI warningText;
-    public PlayerInput input;
+    //public PlayerInput input;
+    public PlayerKey playerKey;
     [Header("정보")] 
     public string Id;
     public string room;
@@ -38,6 +39,18 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         inst = this;
+        playerKey = new PlayerKey();
+        
+    }
+
+    private void OnEnable()
+    {
+        playerKey.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerKey.Disable();
     }
 
     public bool RoomHost
