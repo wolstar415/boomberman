@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-using UnityEngine.InputSystem;
+//using UnityEngine.InputSystem;
 #endif
 #if UNITY_EDITOR && UNITY_2021_1_OR_NEWER
 using Screen = UnityEngine.Device.Screen; // To support Device Simulator on Unity 2021.1+
@@ -87,9 +87,9 @@ namespace IngameDebugConsole
 		private bool toggleWithKey = false;
 
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-		[SerializeField]
-		[HideInInspector]
-		public InputAction toggleBinding = new InputAction( "Toggle Binding", type: InputActionType.Button, binding: "<Keyboard>/backquote", expectedControlType: "Button" );
+		//[SerializeField]
+		//[HideInInspector]
+		//public InputAction toggleBinding = new InputAction( "Toggle Binding", type: InputActionType.Button, binding: "<Keyboard>/backquote", expectedControlType: "Button" );
 #else
 		[SerializeField]
 		[HideInInspector]
@@ -523,21 +523,7 @@ namespace IngameDebugConsole
 			Application.quitting += OnApplicationQuitting;
 #endif
 
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-			toggleBinding.performed += ( context ) =>
-			{
-				if( toggleWithKey )
-				{
-					if( isLogWindowVisible )
-						HideLogWindow();
-					else
-						ShowLogWindow();
-				}
-			};
 
-			// On new Input System, scroll sensitivity is much higher than legacy Input system
-			logItemsScrollRect.scrollSensitivity *= 0.25f;
-#endif
 		}
 
 		private void OnEnable()
@@ -564,10 +550,7 @@ namespace IngameDebugConsole
 			DebugLogConsole.AddCommand( "logs.save", "Saves logs to persistentDataPath", SaveLogsToFile );
 			DebugLogConsole.AddCommand<string>( "logs.save", "Saves logs to the specified file", SaveLogsToFile );
 
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-			if( toggleWithKey )
-				toggleBinding.Enable();
-#endif
+
 
 			//Debug.LogAssertion( "assert" );
 			//Debug.LogError( "error" );
@@ -591,10 +574,7 @@ namespace IngameDebugConsole
 
 			DebugLogConsole.RemoveCommand( "logs.save" );
 
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-			if( toggleBinding.enabled )
-				toggleBinding.Disable();
-#endif
+
 		}
 
 		private void Start()
@@ -831,15 +811,11 @@ namespace IngameDebugConsole
 
 				if( commandInputField.isFocused && commandHistory.Count > 0 )
 				{
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-					if( Keyboard.current != null )
-#endif
+
 					{
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-						if( Keyboard.current[Key.UpArrow].wasPressedThisFrame )
-#else
+
 						if( Input.GetKeyDown( KeyCode.UpArrow ) )
-#endif
+
 						{
 							if( commandHistoryIndex == -1 )
 							{
@@ -852,11 +828,9 @@ namespace IngameDebugConsole
 							commandInputField.text = commandHistory[commandHistoryIndex];
 							commandInputField.caretPosition = commandInputField.text.Length;
 						}
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-						else if( Keyboard.current[Key.DownArrow].wasPressedThisFrame && commandHistoryIndex != -1 )
-#else
+
 						else if( Input.GetKeyDown( KeyCode.DownArrow ) && commandHistoryIndex != -1 )
-#endif
+
 						{
 							if( ++commandHistoryIndex < commandHistory.Count )
 								commandInputField.text = commandHistory[commandHistoryIndex];

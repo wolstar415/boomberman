@@ -43,6 +43,9 @@ public class MapGenerator : MonoBehaviour
 
     public void StartFunc()
     {
+        BoomberManager.inst.itemDictionary.Clear();
+        BoomberManager.inst.IsDead = false;
+        BoomberManager.inst.moveMent.direction = Vector2.zero;
         GameManager.inst.roomOb.SetActive(false);
         GameManager.inst.playOb.SetActive(true);
         foreach (var tile in tileObs)
@@ -66,7 +69,6 @@ public class MapGenerator : MonoBehaviour
     {
         BoomberManager.inst.StopAllCoroutines();
         BoomberManager.inst.timeText.text = "GameOver";
-        
         MapDestory();
         groundTiles.SetActive(false);
         outWallTiles.SetActive(false);
@@ -75,14 +77,20 @@ public class MapGenerator : MonoBehaviour
             if (NetworkManager.inst.players[i] != null)
             {
                 Destroy(NetworkManager.inst.players[i]);
-                NetworkManager.inst.players[i] = null;
             }
+            NetworkManager.inst.players[i] = null;
         }
         BoomberManager.inst.IsStart = false;
         GameManager.inst.roomOb.SetActive(true);
         GameManager.inst.playOb.SetActive(false);
         GameManager.inst.isPlaying = false;
         BoomberManager.inst.gameWait = 0;
+        if (GameManager.inst.RoomHost)
+        {
+            SocketManager.inst.socket.Emit("PlayEnd",GameManager.inst.room);
+        }
+
+        BoomberManager.inst.player = null;
     }
 
     public void CharacterRandomFunc()
@@ -155,6 +163,11 @@ public class MapGenerator : MonoBehaviour
         foreach (var ob in tileObs)
         {
             ob.SetActive(false);
+        }
+
+        foreach (var item in GameObject.FindGameObjectsWithTag("Item"))
+        {
+            item.SetActive(false);
         }
         tileObs.Clear();
     }

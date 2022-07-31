@@ -47,7 +47,7 @@ public class RoomManager : MonoBehaviour
 
     public int tempMapSelectIdx = 0;
     
-    public RoomInfo check;
+    public RoomInfo myRoomInfo;
     private void Awake()
     {
         inst = this;
@@ -55,14 +55,7 @@ public class RoomManager : MonoBehaviour
 
     public void ReadyBtn()
     {
-        if (GameManager.inst.isReady)
-        {
-            GameManager.inst.isReady = false;
-        }
-        else
-        {
-            GameManager.inst.isReady = true;
-        }
+
         int idx = 0;
         for (int i = 0; i < slotName.Length; i++)
         {
@@ -73,9 +66,7 @@ public class RoomManager : MonoBehaviour
             }
         }
         
-        slotText[idx].text = "준비";
-        slotText[idx].color = colors[1];
-        SocketManager.inst.socket.Emit("RoomReady",GameManager.inst.room,idx,GameManager.inst.isReady);
+        SocketManager.inst.socket.Emit("RoomReady",GameManager.inst.room,idx);
         
     }
 
@@ -97,11 +88,11 @@ public class RoomManager : MonoBehaviour
         }
 
         bool b = false;
-        for (int i = 0; i < check.seatInfos.Length; i++)
+        for (int i = 0; i < myRoomInfo.seatInfos.Length; i++)
         {
-            if (check.seatInfos[i].seatname != ""&&check.seatInfos[i].seatname != "막음")
+            if (myRoomInfo.seatInfos[i].seatname != ""&&myRoomInfo.seatInfos[i].seatname != "막음")
             {
-                if (check.seatInfos[i].Idx == 0)
+                if (myRoomInfo.seatInfos[i].Idx == 0)
                 {
                     b = true;
                     break;
@@ -177,6 +168,7 @@ public class RoomManager : MonoBehaviour
     {
         tempMapSelectIdx = idx;
         SelectMapInfoSet(tempMapSelectIdx);
+        myRoomInfo.mapIdx = idx;
     }
 
     public void HostStartFunc()
@@ -210,6 +202,8 @@ public class RoomManager : MonoBehaviour
                 break;
             }
         }
+
+        myRoomInfo.seatInfos[idx].characterIdx = characterIdx;
         SocketManager.inst.socket.Emit("CharacterChange",GameManager.inst.room,idx,characterIdx);
         GameManager.inst.characterIdx = characterIdx;
         slotIcon[idx].sprite = Icons[characterIdx];
@@ -228,27 +222,18 @@ public class RoomManager : MonoBehaviour
             if (slotIcon[idx].sprite == xIcon)
             {
                 SocketManager.inst.socket.Emit("SlotOpen",GameManager.inst.room,idx);
-                slotName[idx].text = "";
-                slotText[idx].text = "준비";
-                slotText[idx].color = colors[0];
-                slotIcon[idx].sprite = null;
+
             }
             else if (slotName[idx].text == "")
             {
                 SocketManager.inst.socket.Emit("SlotClose",GameManager.inst.room,idx);
-                slotName[idx].text = "";
-                slotText[idx].text = "준비";
-                slotText[idx].color = colors[0];
-                slotIcon[idx].sprite = xIcon;
+
                 //막기
             }
             else if (slotName[idx].text != "")
             {
                 SocketManager.inst.socket.Emit("SlotKick",GameManager.inst.room,slotName[idx].text,idx);
-                slotName[idx].text = "";
-                slotText[idx].text = "준비";
-                slotText[idx].color = colors[0];
-                slotIcon[idx].sprite = null;
+
                 //킥
             }
         }
@@ -258,7 +243,7 @@ public class RoomManager : MonoBehaviour
             {
                 return;
             }
-            if (slotText[idx].text != "")
+            if (slotName[idx].text != "")
             {
                 return;
             }
@@ -346,8 +331,7 @@ public class RoomManager : MonoBehaviour
             }
             
         }
-        
-        MapInfoSetting(check.mapIdx);
+        MapInfoSetting(myRoomInfo.mapIdx);
         if (GameManager.inst.RoomHost&&readyCheck==0&&readyCheck2>=1)
         {
             RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = true;
@@ -359,61 +343,61 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    public void SlotReSet(int idx)
-    {
-        int readyCheck = 0;
-        int readyCheck2 = 0;
-        for (int i = 0; i < 4; i++)
-        {
-            if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "막음")
-            {
-                slotName[i].text = "";
-                slotText[i].text = "준비";
-                slotText[i].color = colors[0];
-                slotIcon[i].sprite = xIcon;
-            }
-            else if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "")
-            {
-                slotName[i].text = "";
-                slotText[i].text = "준비";
-                slotText[i].color = colors[0];
-                slotIcon[i].sprite = null;
-            }
-            else
-            {
-                slotName[i].text = LobyManager.inst.roomInfos[idx].seatInfos[i].seatname;
-                if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 0)
-                {
-                    slotText[i].text = "준비";
-                    readyCheck++;
-                    slotText[i].color = colors[0];
-                }
-                else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 1)
-                {
-                    slotText[i].text = "준비";
-                    readyCheck2++;
-                    slotText[i].color = colors[1];
-                }
-                else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 2)
-                {
-                    slotText[i].text = "방장";
-                    slotText[i].color = colors[2];
-                }
-                slotIcon[i].sprite = Icons[LobyManager.inst.roomInfos[idx].seatInfos[i].characterIdx];
-            }
-            
-        }
-        MapInfoSetting(check.mapIdx);
-        if (GameManager.inst.RoomHost&&readyCheck==0&&readyCheck2>=1)
-        {
-            RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = true;
-        }
-        else
-        {
-            RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
-            
-        }
-    }
+    // public void SlotReSet(int idx)
+    // {
+    //     int readyCheck = 0;
+    //     int readyCheck2 = 0;
+    //     for (int i = 0; i < 4; i++)
+    //     {
+    //         if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "막음")
+    //         {
+    //             slotName[i].text = "";
+    //             slotText[i].text = "준비";
+    //             slotText[i].color = colors[0];
+    //             slotIcon[i].sprite = xIcon;
+    //         }
+    //         else if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "")
+    //         {
+    //             slotName[i].text = "";
+    //             slotText[i].text = "준비";
+    //             slotText[i].color = colors[0];
+    //             slotIcon[i].sprite = null;
+    //         }
+    //         else
+    //         {
+    //             slotName[i].text = LobyManager.inst.roomInfos[idx].seatInfos[i].seatname;
+    //             if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 0)
+    //             {
+    //                 slotText[i].text = "준비";
+    //                 readyCheck++;
+    //                 slotText[i].color = colors[0];
+    //             }
+    //             else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 1)
+    //             {
+    //                 slotText[i].text = "준비";
+    //                 readyCheck2++;
+    //                 slotText[i].color = colors[1];
+    //             }
+    //             else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 2)
+    //             {
+    //                 slotText[i].text = "방장";
+    //                 slotText[i].color = colors[2];
+    //             }
+    //             slotIcon[i].sprite = Icons[LobyManager.inst.roomInfos[idx].seatInfos[i].characterIdx];
+    //         }
+    //         
+    //     }
+    //     MapInfoSetting(check.mapIdx);
+    //     if (GameManager.inst.RoomHost&&readyCheck==0&&readyCheck2>=1)
+    //     {
+    //         RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = true;
+    //     }
+    //     else
+    //     {
+    //         RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
+    //         
+    //     }
+    // }
 
     public void MapInfoSetting(int idx)
     {
@@ -429,8 +413,8 @@ public class RoomManager : MonoBehaviour
         SocketManager.inst.socket.OnUnityThread("SlotReset", data =>
         {
             string s = data.GetValue(0).ToString();
-            check = JsonConvert.DeserializeObject<RoomInfo>(s);
-            SlotReset(check);
+            myRoomInfo = JsonConvert.DeserializeObject<RoomInfo>(s);
+            SlotReset(myRoomInfo);
         });
         SocketManager.inst.socket.OnUnityThread("KickCheck", data =>
         {
@@ -481,6 +465,8 @@ public class RoomManager : MonoBehaviour
         
         
         
+        
+        
     }
 
     public void RoomLeaveFunc()
@@ -492,7 +478,7 @@ public class RoomManager : MonoBehaviour
     
     public void OnEndEditEventMethod()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (GameManager.inst.input.actions["ChatEnd"].triggered)
         {
             UpdateChat();
             roomChatField.ActivateInputField();

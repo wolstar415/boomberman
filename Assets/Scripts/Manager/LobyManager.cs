@@ -42,7 +42,17 @@ public class LobyManager : MonoBehaviour
         {
             return 0;
         }
-        return roomInfos2.Count / 6;
+
+        if (roomInfos2.Count / 6 > 0)
+        {
+            if (roomInfos2.Count % 6 == 0)
+            {
+                return roomInfos2.Count / 6 -1;
+            }
+            return roomInfos2.Count / 6;
+        }
+
+        return 0;
     }
 
     public Button[] roomBtn;
@@ -68,7 +78,7 @@ public class LobyManager : MonoBehaviour
 
     public void OnEndEditEventMethod()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (GameManager.inst.input.actions["ChatEnd"].triggered)
         {
             UpdateChat();
             lobyChatField.ActivateInputField();
@@ -242,7 +252,6 @@ public class LobyManager : MonoBehaviour
             RoomManager.inst.HostStartFunc();
             GameManager.inst.characterIdx = 0;
             GameManager.inst.isPlaying = false;
-            GameManager.inst.isReady = false;
             RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
             RoomManager.inst.ArrowSet(0);
             BoomberManager.inst.gameWait = 0;
@@ -270,11 +279,10 @@ public class LobyManager : MonoBehaviour
             GameManager.inst.CreateRoomOb.SetActive(false);
             GameManager.inst.room = data.GetValue(0).GetString();
             string s = data.GetValue(1).ToString();
-            RoomManager.inst.check = JsonConvert.DeserializeObject<RoomInfo>(s);
-            RoomManager.inst.SlotReset(RoomManager.inst.check);
+            RoomManager.inst.myRoomInfo = JsonConvert.DeserializeObject<RoomInfo>(s);
+            RoomManager.inst.SlotReset(RoomManager.inst.myRoomInfo);
             GameManager.inst.characterIdx = 0;
             GameManager.inst.isPlaying = false;
-            GameManager.inst.isReady = false;
             RoomManager.inst.ArrowSet(0);
             BoomberManager.inst.gameWait = 0;
 
@@ -287,6 +295,7 @@ public class LobyManager : MonoBehaviour
         GameManager.inst.CreateRoomOb.SetActive(true);
         lobyCreateRoomToogle[0].isOn = true;
         lobyCreateRoomField.text = $"{GameManager.inst.Id}의 방";
+        lobyCreateRoomField.Select();
     }
 
     public void CreatRoomBtn()

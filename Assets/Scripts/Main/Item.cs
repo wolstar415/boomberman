@@ -14,6 +14,7 @@ public enum EItemType
 public class Item : MonoBehaviour
 {
     public EItemType itemType;
+    public int Idx = 0;
 
     private void OnTriggerEnter2D(Collider2D col)
     {
@@ -38,9 +39,8 @@ public class Item : MonoBehaviour
                         break;
                 }
             }
-            
-            
-            gameObject.SetActive(false);
         }
+        gameObject.SetActive(false);
+        SocketManager.inst.socket.Emit("ItemRemove",GameManager.inst.room,Idx);
     }
 }

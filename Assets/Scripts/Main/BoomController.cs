@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class BoomController : MonoBehaviour
 {
@@ -19,18 +20,16 @@ public class BoomController : MonoBehaviour
             }
         });
     }
-    private void Update()
+
+    private void OnBomb(InputValue value)
     {
         if (BoomberManager.inst.IsStart == false||BoomberManager.inst.IsDead)
         {
             return;
         }
         
-        if (!BoomberManager.inst.playChat.isFocused&&BoomberManager.inst.bombsRemaining >0&& Input.GetKeyDown(KeyCode.Space))
+        if (!BoomberManager.inst.playChat.isFocused&&BoomberManager.inst.bombsRemaining >0)
         {
-            
-            
-            
             Vector2 position = BoomberManager.inst.player.transform.position;
             position.x = Mathf.Round(position.x);
             position.y = Mathf.Round(position.y);

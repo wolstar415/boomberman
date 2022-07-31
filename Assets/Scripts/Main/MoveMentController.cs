@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MoveMentController : MonoBehaviour
 {
@@ -15,146 +16,126 @@ public class MoveMentController : MonoBehaviour
 
     [SerializeField] private GameObject moveOb;
     [SerializeField] private float moveTime;
-    
 
-    
 
     // Start is called before the first frame update
 
 
-    
-  
-
-    // Update is called once per frame
-    void Update()
+    private void OnMovement(InputValue value)
     {
-
-        if (BoomberManager.inst.IsStart == false||BoomberManager.inst.IsDead)
+        if (BoomberManager.inst.IsStart == false || BoomberManager.inst.IsDead||BoomberManager.inst.player==null)
         {
             return;
         }
-        
-        
-        if (Input.GetKey(KeyCode.UpArrow))
+
+        Vector2 v = value.Get<Vector2>();
+
+
+        if (v == Vector2.up)
         {
             SetDirection(Vector2.up);
-            ani.SetFloat(Horizontal,0);
-            ani.SetFloat(Vertical,1);
-            ani.SetBool(IsMoving,true);
+            ani.SetFloat(Horizontal, 0);
+            ani.SetFloat(Vertical, 1);
+            ani.SetBool(IsMoving, true);
             NetworkManager.inst.myData.horizontal = 0;
             NetworkManager.inst.myData.vertical = 1;
             NetworkManager.inst.myData.isMoving = true;
-
-
         }
-        else if (Input.GetKey(KeyCode.DownArrow))
+        else if (v == Vector2.down)
         {
-
-            ani.SetFloat(Horizontal,0);
-            ani.SetFloat(Vertical,-1);
+            ani.SetFloat(Horizontal, 0);
+            ani.SetFloat(Vertical, -1);
             SetDirection(Vector2.down);
-            ani.SetBool(IsMoving,true);
+            ani.SetBool(IsMoving, true);
             NetworkManager.inst.myData.horizontal = 0;
             NetworkManager.inst.myData.vertical = -1;
             NetworkManager.inst.myData.isMoving = true;
         }
-        else if (Input.GetKey(KeyCode.LeftArrow))
+        else if (v == Vector2.left)
         {
-
-            ani.SetFloat(Horizontal,-1);
-            ani.SetFloat(Vertical,0);
-            ani.SetBool(IsMoving,true);
+            ani.SetFloat(Horizontal, -1);
+            ani.SetFloat(Vertical, 0);
+            ani.SetBool(IsMoving, true);
             SetDirection(Vector2.left);
             NetworkManager.inst.myData.horizontal = -1;
             NetworkManager.inst.myData.vertical = 0;
             NetworkManager.inst.myData.isMoving = true;
         }
-        else if (Input.GetKey(KeyCode.RightArrow))
+        else if (v == Vector2.right)
         {
-
-            ani.SetFloat(Horizontal,1);
-            ani.SetFloat(Vertical,0);
-            ani.SetBool(IsMoving,true);
+            ani.SetFloat(Horizontal, 1);
+            ani.SetFloat(Vertical, 0);
+            ani.SetBool(IsMoving, true);
             SetDirection(Vector2.right);
             NetworkManager.inst.myData.horizontal = 1;
             NetworkManager.inst.myData.vertical = 0;
             NetworkManager.inst.myData.isMoving = true;
         }
-        else
+        else if (v == Vector2.zero)
         {
-            if (direction!=Vector2.zero)
-            {
-                
-                ani.SetBool(IsMoving,false);
-                SetDirection(Vector2.zero);
-                NetworkManager.inst.myData.isMoving = false;
-                string s = JsonConvert.SerializeObject(NetworkManager.inst.myData);
-                SocketManager.inst.socket.Emit("Playmove",GameManager.inst.room,BoomberManager.inst.playerIdx,s);
-
-            }
-            
+            ani.SetBool(IsMoving, false);
+            SetDirection(Vector2.zero);
+            NetworkManager.inst.myData.isMoving = false;
+            string s = JsonConvert.SerializeObject(NetworkManager.inst.myData);
+            SocketManager.inst.socket.Emit("Playmove", GameManager.inst.room, BoomberManager.inst.playerIdx, s);
         }
+    }
 
+    private void Update()
+    {
+        if (BoomberManager.inst.IsStart == false || BoomberManager.inst.IsDead||BoomberManager.inst.player==null)
+        {
+            return;
+        }
         if (direction != Vector2.zero)
         {
-            RaycastHit2D check = Physics2D.Raycast(BoomberManager.inst.player.transform.position, direction, 1f,
-                BoomberManager.inst.brickMask);
-            if (!check)
+            BrickMoveCheck();
+        }
+    }
+
+    private void BrickMoveCheck()
+    {
+        RaycastHit2D check = Physics2D.Raycast(BoomberManager.inst.player.transform.position, direction, 1f,
+            BoomberManager.inst.brickMask);
+        if (!check)
+        {
+            moveOb = null;
+            moveTime = 0;
+        }
+        else
+        {
+            if (check.transform.CompareTag("Brick_Move"))
             {
-                moveOb = null;
-                moveTime = 0;
-            }
-            else
-            {
-                if (check.transform.CompareTag("Brick_Move"))
+                if (moveOb != check.transform.gameObject)
                 {
-                    if (moveOb != check.transform.gameObject)
+                    moveTime = 0;
+                    moveOb = check.transform.gameObject;
+                }
+                else
+                {
+                    moveTime += Time.deltaTime;
+                    if (moveTime >= 0.2f)
                     {
                         moveTime = 0;
-                        moveOb = check.transform.gameObject;
-                
-                    }
-                    else
-                    {
-                        moveTime += Time.deltaTime;
-                        if (moveTime >= 0.2f)
+                        if (!Physics2D.OverlapCircle(check.transform.position + (Vector3)direction, 0.2f,
+                                BoomberManager.inst.moveCheckMask))
                         {
-                            moveTime = 0;
-                            if (!Physics2D.OverlapCircle(check.transform.position+ (Vector3)direction, 0.2f,
-                                    BoomberManager.inst.moveCheckMask))
+                            if (moveOb.TryGetComponent(out Brick b))
                             {
-                                if (moveOb.TryGetComponent(out Brick b))
+                                if (b.isMoving == false)
                                 {
-                                    if (b.isMoving == false)
-                                    {
-                                        b.Move(direction);
-                                        SocketManager.inst.socket.Emit("BrickMove",GameManager.inst.room,direction.x,direction.y,b.Idx);
-                                    }
+                                    b.Move(direction);
+                                    SocketManager.inst.socket.Emit("BrickMove", GameManager.inst.room, direction.x,
+                                        direction.y, b.Idx);
                                 }
                             }
-                            
                         }
                     }
                 }
             }
-            
-            
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
     }
+
 
     private void FixedUpdate()
     {
@@ -162,71 +143,74 @@ public class MoveMentController : MonoBehaviour
         {
             return;
         }
-        
+
         for (int i = 0; i < NetworkManager.inst.players.Length; i++)
         {
             if (BoomberManager.inst.playerIdx == i)
             {
                 continue;
             }
-            if (NetworkManager.inst.players[i]!=null)
+
+            if (NetworkManager.inst.players[i] != null)
             {
-                Vector3 pos = new Vector3(NetworkManager.inst.playerDatas[i].pos_x,NetworkManager.inst.playerDatas[i].pos_y);
+                Vector3 pos = new Vector3(NetworkManager.inst.playerDatas[i].pos_x,
+                    NetworkManager.inst.playerDatas[i].pos_y);
                 float horizontal = NetworkManager.inst.playerDatas[i].horizontal;
                 float vertical = NetworkManager.inst.playerDatas[i].vertical;
-                bool move=NetworkManager.inst.playerDatas[i].isMoving;
+                bool move = NetworkManager.inst.playerDatas[i].isMoving;
                 if (NetworkManager.inst.players[i].TryGetComponent(out CharacterInfo info))
                 {
-                    info.ani.SetFloat(Horizontal,horizontal);
-                    info.ani.SetFloat(Vertical,vertical);
-                    info.ani.SetBool(IsMoving,move);
+                    info.ani.SetFloat(Horizontal, horizontal);
+                    info.ani.SetFloat(Vertical, vertical);
+                    info.ani.SetBool(IsMoving, move);
                 }
-                NetworkManager.inst.players[i].transform.position =  Vector3.Lerp(NetworkManager.inst.players[i].transform.position,pos,Time.deltaTime*20);
+
+                NetworkManager.inst.players[i].transform.position = pos;
+
+                // NetworkManager.inst.players[i].transform.position =
+                //     Vector3.Lerp(NetworkManager.inst.players[i].transform.position, pos, Time.deltaTime * 20);
             }
         }
-        
-        if (direction==Vector2.zero)
+
+        if (direction == Vector2.zero)
         {
             return;
         }
+
+        if (BoomberManager.inst.IsDead)
+        {
+            return;
+        }
+
         Vector2 position = rigidbody.position;
-        Vector2 translation = direction * (    BoomberManager.inst.Speed*Time.fixedDeltaTime);
+        Vector2 translation = direction * (BoomberManager.inst.Speed * Time.fixedDeltaTime);
         rigidbody.MovePosition(position + translation);
         var position1 = rigidbody.position;
         NetworkManager.inst.myData.pos_x = position1.x;
         NetworkManager.inst.myData.pos_y = position1.y;
         string s = JsonConvert.SerializeObject(NetworkManager.inst.myData);
-        SocketManager.inst.socket.Emit("Playmove",GameManager.inst.room,BoomberManager.inst.playerIdx,s);
-        
-        
+        SocketManager.inst.socket.Emit("Playmove", GameManager.inst.room, BoomberManager.inst.playerIdx, s);
     }
 
     public void Start()
     {
         SocketManager.inst.socket.OnUnityThread("Playmove", data =>
         {
-
             NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()] =
                 JsonConvert.DeserializeObject<PlayerData>(data.GetValue(1).ToString());
-
         });
         SocketManager.inst.socket.OnUnityThread("BrickMove", data =>
         {
-
             GameObject ob = BoomberManager.inst.mapGenerator.brickObs[data.GetValue(2).GetInt32()];
             if (ob.TryGetComponent(out Brick b))
             {
-                b.Move(new Vector3(data.GetValue(0).GetSingle(),data.GetValue(1).GetSingle()));
+                b.Move(new Vector3(data.GetValue(0).GetSingle(), data.GetValue(1).GetSingle()));
             }
-
-
         });
-        
     }
 
     private void SetDirection(Vector2 newDirection)
     {
         direction = newDirection;
-        
     }
 }

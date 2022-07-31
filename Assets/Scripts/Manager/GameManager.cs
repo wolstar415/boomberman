@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -13,18 +14,18 @@ public class GameManager : MonoBehaviour
     public GameObject loadingOb;
     public GameObject warningOb;
     public TextMeshProUGUI warningText;
-
+    public PlayerInput input;
     [Header("정보")] 
     public string Id;
     public string room;
     public int roomSlot;
     public int victory;
     public int defeat;
+    public int draw;
     private bool _RoomHost;
     public int characterIdx = 0;
     public int mapIdx = 0;
     public bool isPlaying;
-    public bool isReady;
 
     [Header("패널들")] 
     public GameObject loginOb;
@@ -70,4 +71,12 @@ public class GameManager : MonoBehaviour
         warningOb.SetActive(true);
     }
 
+
+    void OnChatEnd()
+    {
+        if (warningOb.activeSelf)
+        {
+            warningOb.SetActive(false);
+        }
+    }
 }

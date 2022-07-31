@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoomberManager : MonoBehaviour
 {
@@ -50,8 +52,14 @@ public class BoomberManager : MonoBehaviour
     public TMP_InputField playChat;
     public TextMeshProUGUI timeText;
     public TextMeshProUGUI[] playernames;
+    public Image[] playerIcon;
+    public GameObject endGameOb;
+    public TextMeshProUGUI endGameText;
     [Header("데이터")] public CharacterData[] characterDatas;
     private static readonly int IsDead1 = Animator.StringToHash("IsDead");
+    private Coroutine coDead;
+
+    public Dictionary<int, GameObject> itemDictionary=new Dictionary<int, GameObject>();
 
 
     private void Awake()
@@ -96,18 +104,31 @@ public class BoomberManager : MonoBehaviour
     public void GameWait()
     {
         gameWait++;
-        if (RoomManager.inst.check.currentP == gameWait)
+        if (RoomManager.inst.myRoomInfo.currentP == gameWait)
         {
-            for (int i = 0; i < RoomManager.inst.check.seatInfos.Length; i++)
+            for (int i = 0; i < NetworkManager.inst.playerDatas.Length; i++)
             {
-                if (RoomManager.inst.check.seatInfos[i].seatname != "" &&
-                    RoomManager.inst.check.seatInfos[i].seatname == "막음")
+                NetworkManager.inst.playerDatas[i].isDead = false;
+                NetworkManager.inst.playerDatas[i].isMoving = false;
+                NetworkManager.inst.playerDatas[i].isMoving = false;
+                NetworkManager.inst.playerDatas[i].horizontal = 0;
+                NetworkManager.inst.playerDatas[i].vertical = -1;
+                
+            }
+            
+            
+            
+            for (int i = 0; i < RoomManager.inst.myRoomInfo.seatInfos.Length; i++)
+            {
+                if (RoomManager.inst.myRoomInfo.seatInfos[i].seatname == "" ||
+                    RoomManager.inst.myRoomInfo.seatInfos[i].seatname == "막음")
                 {
                     playernames[i].text = "";
+                    playerIcon[i].sprite = null;
                 }
                 else
                 {
-                    playernames[i].text = RoomManager.inst.check.seatInfos[i].seatname;
+                    playernames[i].text = RoomManager.inst.myRoomInfo.seatInfos[i].seatname;
                 }
                 
             }
@@ -119,6 +140,7 @@ public class BoomberManager : MonoBehaviour
             GameManager.inst.loadingOb.SetActive(false);
             int posInt = mapGenerator.randomPos[playerIdx];
             GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[characterIdx], BoomberManager.inst.respawnPos[posInt], Quaternion.identity);
+            playerIcon[playerIdx].sprite = RoomManager.inst.Icons[characterIdx+1];
             BoomberManager.inst.player = ob;
             NetworkManager.inst.myData.isDead = false;
             NetworkManager.inst.myData.isMoving = false;
@@ -171,18 +193,78 @@ public class BoomberManager : MonoBehaviour
         {
             return;
         }
+        IsDead = true;
+        NetworkManager.inst.playerDatas[playerIdx].isDead = true;
+        NetworkManager.inst.myData.isDead = true;
         SocketManager.inst.socket.Emit("PlayDead",GameManager.inst.room,BoomberManager.inst.playerIdx);
         StartCoroutine(CoDead(player));
-        IsDead = true;
-        NetworkManager.inst.myData.isDead = true;
+        player = null;
+
     }
+
+    public IEnumerator DeadChead()
+    {
+        yield return YieldInstructionCache.WaitForSeconds(0.5f);
+        int amount = 0;
+        for (int i = 0; i < NetworkManager.inst.players.Length; i++)
+        {
+            if (NetworkManager.inst.players[i] != null)
+            {
+                if (!NetworkManager.inst.playerDatas[i].isDead)
+                {
+                    amount++;
+                }
+            }
+        }
+
+        if (amount <= 1)
+        {
+            IsStart = false;
+            
+            if (amount == 0)
+            {
+                endGameText.text = "무승부!";
+                GameManager.inst.draw++;
+                SocketManager.inst.socket.Emit("record","draw",GameManager.inst.Id,GameManager.inst.draw);
+            }
+            else
+            {
+                if (IsDead)
+                {
+                    endGameText.text = "패배!";
+                    GameManager.inst.defeat++;
+                    SocketManager.inst.socket.Emit("record","defeat",GameManager.inst.Id,GameManager.inst.defeat);
+
+                }
+                else
+                {
+                    endGameText.text = "승리!";
+                    GameManager.inst.victory++;
+                    SocketManager.inst.socket.Emit("record","victory",GameManager.inst.Id,GameManager.inst.victory);
+
+                }
+            }
+            endGameOb.SetActive(true);
+            LoginManager.inst.ReCordSetting();
+            yield return YieldInstructionCache.WaitForSeconds(2f);
+            endGameOb.SetActive(false);
+            mapGenerator.EndFunc();
+            coDead = null;
+        }
+    }
+    
 
     IEnumerator CoDead(GameObject ob)
     {
+        if (coDead != null)
+        {
+            StopCoroutine(coDead);
+        }
+        coDead=StartCoroutine(DeadChead());
         ob.GetComponent<CharacterInfo>().ani.SetBool(IsDead1,true);
         ob.GetComponent<CircleCollider2D>().enabled = false;
         yield return YieldInstructionCache.WaitForSeconds(1.5f);
-        Destroy(ob);
+        ob.SetActive(false);
     }
 
     public void SpeedUp()
@@ -221,14 +303,10 @@ public class BoomberManager : MonoBehaviour
             GameObject ob = Instantiate(NetworkManager.inst.playerPrefabs[data.GetValue(1).GetInt32()], BoomberManager.inst.respawnPos[posInt], Quaternion.identity);
             NetworkManager.inst.players[data.GetValue(0).GetInt32()] = ob;
 
-            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].isDead = false;
-            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].isMoving = false;
-            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].isMoving = false;
-            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].horizontal = 0;
-            NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].vertical = -1;
+            
             NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].pos_x = BoomberManager.inst.respawnPos[posInt].x;
             NetworkManager.inst.playerDatas[data.GetValue(0).GetInt32()].pos_y = BoomberManager.inst.respawnPos[posInt].y;
-            
+            playerIcon[data.GetValue(0).GetInt32()].sprite = RoomManager.inst.Icons[data.GetValue(1).GetInt32()+1];
             
 
 
@@ -245,22 +323,63 @@ public class BoomberManager : MonoBehaviour
             StartCoroutine(CoDead(NetworkManager.inst.players[data.GetValue(0).GetInt32()]));
             //데드처리 승패 확인하기
         });
+        SocketManager.inst.socket.OnUnityThread("ItemRemove", data =>
+        {
+            if (itemDictionary.ContainsKey(data.GetValue(0).GetInt32()))
+            {
+                itemDictionary[data.GetValue(0).GetInt32()].SetActive(false);
+            }
+        });
+        
+        SocketManager.inst.socket.OnUnityThread("PlayerExit", data =>
+        {
+            int idx = 0;
+            for (int i = 0; i < playernames.Length; i++)
+            {
+                if (playernames[i].text == data.GetValue(0).GetString())
+                {
+                    idx = i;
+                    break;
+                }
+            }
+            if (!NetworkManager.inst.playerDatas[idx].isDead)
+            {
+                NetworkManager.inst.playerDatas[idx].isDead = true;
+                StartCoroutine(CoDead(NetworkManager.inst.players[idx]));
+            }
+            
+            
+        });
+        
     }
     
-    public void OnEndEditEventMethod()
+    public async void OnEndEditEventMethod()
     {
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (GameManager.inst.input.actions["ChatEnd"].triggered)
         {
             UpdateChat();
+            await Task.Delay(1);
+            playChat.gameObject.SetActive(false);
 
         }
+    }
+    public void ExitBtn()
+    {
+        SocketManager.inst.socket.Emit("RoomLeave",GameManager.inst.room,playerIdx);
+        if (!IsDead)
+        {
+            SocketManager.inst.socket.Emit("PlayDead",GameManager.inst.room,BoomberManager.inst.playerIdx);
+        }
+        mapGenerator.EndFunc();
+        RoomManager.inst.RoomLeaveFunc();
+        GameManager.inst.roomOb.SetActive(false);
+        GameManager.inst.lobyOb.SetActive(true);
     }
     public void UpdateChat()
         //채팅을 입력시 이벤트
     {
         if (playChat.text.Equals(""))
         {
-            playChat.gameObject.SetActive(false);
             return;
         }
         //아무것도없다면 리턴
@@ -268,21 +387,20 @@ public class BoomberManager : MonoBehaviour
         Chat(GameManager.inst.Id,playChat.text,playerIdx);
         SocketManager.inst.socket.Emit("PlayChat", GameManager.inst.room,GameManager.inst.Id,playChat.text,playerIdx);
         playChat.text = "";
-        playChat.gameObject.SetActive(false);
     }
     public void Chat(string name,string s, int idx)
     {
        NetworkManager.inst.players[idx].GetComponent<CharacterInfo>().Chat(name,s);
     }
 
-    public void Update()
+    private void OnPlayChat()
     {
-        
-        if (Input.GetKeyDown(KeyCode.Return)&&GameManager.inst.playOb.activeSelf&&!playChat.isFocused)
+        if (GameManager.inst.playOb.activeSelf && !playChat.isFocused)
         {
             playChat.gameObject.SetActive(true);
+            playChat.ActivateInputField();
             playChat.Select();
         }
-        
     }
+
 }

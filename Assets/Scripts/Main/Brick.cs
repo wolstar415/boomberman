@@ -60,7 +60,9 @@ public class Brick : MonoBehaviour
         int item = BoomberManager.inst.itemIdx[Idx];
         if (item >= 1)
         {
-            ObjectPooler.SpawnFromPool(BoomberManager.inst.Items[item], transform.position, quaternion.identity);
+            GameObject ob= ObjectPooler.SpawnFromPool(BoomberManager.inst.Items[item], transform.position, quaternion.identity);
+            ob.GetComponent<Item>().Idx = Idx;
+            BoomberManager.inst.itemDictionary.Add(Idx,ob);
         }
         gameObject.SetActive(false);
     }
