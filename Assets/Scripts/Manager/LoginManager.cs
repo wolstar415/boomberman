@@ -99,7 +99,7 @@ public class LoginManager : MonoBehaviour
 
     public void LoginEnter()
     {
-        if(GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
+        if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             LoginBtn();
         }
@@ -107,18 +107,15 @@ public class LoginManager : MonoBehaviour
 
     public void CreateEnter()
     {
-        if(GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
+        if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
         {
             CreateBtn();
         }
     }
 
 
-
-
     public async UniTaskVoid OnTab()
     {
-        
         if (GameManager.inst.loginOb.activeSelf)
         {
             await Task.Yield();
@@ -146,8 +143,6 @@ public class LoginManager : MonoBehaviour
             {
                 createIdFiled.Select();
             }
-            
         }
-        
     }
 }

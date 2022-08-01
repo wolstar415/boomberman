@@ -35083,12 +35083,12 @@ MonoBehaviour:
   - {fileID: 1773003928}
   - {fileID: 303628179}
   nextBtn: {fileID: 1663947118}
-  BeforeBtn: {fileID: 249884295}
+  beforeBtn: {fileID: 249884295}
   lobyChatParent: {fileID: 320536748}
   lobyChatField: {fileID: 2121162253}
   textObs: []
   lobyCreateRoomField: {fileID: 1330596116}
-  lobyCreateRoomToogle:
+  lobyCreateRoomToggle:
   - {fileID: 641488733}
   - {fileID: 1428436025}
 --- !u!1 &1606119377
@@ -40077,7 +40077,7 @@ GameObject:
   - component: {fileID: 1866489814}
   - component: {fileID: 1866489818}
   m_Layer: 0
-  m_Name: BoomberManager
+  m_Name: BomberManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42145,7 +42145,7 @@ MonoBehaviour:
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: d1d727fd-b803-404b-8cb6-59afb3a1312b
+  m_DefaultActionMap: UIChat
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!1 &1975963047
@@ -42889,9 +42889,9 @@ MonoBehaviour:
   respawnTile: {fileID: 11400000, guid: 19dddc9095b13754baea41c9b7bde694, type: 2}
   offset: {x: 0.5, y: 0.5, z: 0}
   temp_pos:
-  - {x: 3.4772e-41, y: 7.1e-43, z: 0}
   - {x: 0, y: 0, z: 0}
-  - {x: 3.4797e-41, y: 0.00000021438682, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}

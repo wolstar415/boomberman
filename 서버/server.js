@@ -17,7 +17,7 @@ const io = new Server(server);
 
 
 io.use((socket, next) => {
-  if (socket.handshake.query.token === "UNITY" && socket.handshake.query.name === "boomberman" && socket.handshake.query.version === "0.1") {
+  if (socket.handshake.query.token === "UNITY" && socket.handshake.query.name === "bomberman" && socket.handshake.query.version === "0.1") {
     next();
   } else {
     next(new Error("인증 오류 "));
@@ -166,6 +166,7 @@ io.on('connection', socket => {
 
 
   socket.on('JoinRoomCheck', (roomname, id) => {
+    //방 참여
 
     if (roomname in Rooms && Rooms[roomname].currentP < Rooms[roomname].maxP) {
 
@@ -194,7 +195,6 @@ io.on('connection', socket => {
         mapIdx: Rooms[roomname].mapIdx
 
       }
-      const age = 3
       console.log(`${id} : 방참가 성공`)
       socket.emit('Join', roomname, roomcheck)
       socket.to(roomname).emit('SlotReset', roomcheck)
@@ -204,6 +204,65 @@ io.on('connection', socket => {
       console.log(`${id} : 방참가 실패`)
       socket.emit('Warnning', '방 참가 실패')
     }
+  })
+
+
+  socket.on('CreateRoomCheck', (roomName, nickname) => {
+    //방 생성
+    if (roomName in Rooms) {
+      //방이 있는지 없는지 확인
+      console.log(" 방이름 겹침!")
+      socket.emit('Warnning', "방이름이 이미 있습니다")
+      //방생성 실패
+    }
+    else {
+      //방생성 성공
+      socket.leave("Loby");
+      socket.join(roomName);
+      //들어갑니다.
+
+      Users[socket.id].Room = roomName
+
+
+      Rooms[roomName] = {
+        name: roomName,
+        currentP: 1,
+        maxP: 4,
+        seatInfos: [
+          {
+            seatname: nickname,
+            characterIdx: 0,
+            Idx: 2
+          },
+          {
+            seatname: "",
+            characterIdx: 0,
+            Idx: 0
+          },
+          {
+            seatname: "",
+            characterIdx: 0,
+            Idx: 0
+          },
+          {
+            seatname: "",
+            characterIdx: 0,
+            Idx: 0
+          },
+        ],
+        isPlaying: false,
+        mapIdx: 0
+      }
+      //방 기본 설정
+
+      console.log(`${roomName} : 방생성 성공`)
+
+      socket.emit('CreateRoom')
+      //성공했다고 이벤트를 보냅니다.
+      RoomLobyInfoEmit()
+      //방 목록을 전부 보내는 이벤트를 실행합니다.
+    }
+
   })
 
 
@@ -414,61 +473,7 @@ io.on('connection', socket => {
 
 
 
-  socket.on('CreateRoomCheck', (roomName, nickname) => {
-    if (roomName in Rooms) {
-      //방이 있는지 없는지 확인
-      console.log(" 방이름 겹침!")
-      socket.emit('Warnning', "방이름이 이미 있습니다")
-      //방생성 실패
-    }
-    else {
-      //방생성 성공
-      socket.leave("Loby");
-      socket.join(roomName);
-      //들어갑니다.
-
-      Users[socket.id].Room = roomName
-
-
-      Rooms[roomName] = {
-        name: roomName,
-        currentP: 1,
-        maxP: 4,
-        seatInfos: [
-          {
-            seatname: nickname,
-            characterIdx: 0,
-            Idx: 2
-          },
-          {
-            seatname: "",
-            characterIdx: 0,
-            Idx: 0
-          },
-          {
-            seatname: "",
-            characterIdx: 0,
-            Idx: 0
-          },
-          {
-            seatname: "",
-            characterIdx: 0,
-            Idx: 0
-          },
-        ],
-        isPlaying: false,
-        mapIdx: 0
-      }
-
-      console.log(`${roomName} : 방생성 성공`)
-
-      socket.emit('CreateRoom')
-      //성공했다고 이벤트를 보냅니다.
-      RoomLobyInfoEmit()
-      //방 목록을 전부 보내는 이벤트를 실행합니다.
-    }
-
-  })
+  
   socket.on('RoomLeave', (roomname, idx) => {
     //방을 나갑니다
 
@@ -580,9 +585,9 @@ io.on('connection', socket => {
 
 
   })
-  socket.on('BrickMove', (roomname, wall_x, wall_y,dir_x,dir_y, playerIdx) => {
+  socket.on('BrickMove', (roomname, wall_x, wall_y, dir_x, dir_y, playerIdx) => {
     console.log(`${roomname} : 벽 이동`)
-    socket.to(roomname).emit('BrickMove', playerIdx,wall_x,wall_y,dir_x,dir_y)
+    socket.to(roomname).emit('BrickMove', playerIdx, wall_x, wall_y, dir_x, dir_y)
 
 
   })

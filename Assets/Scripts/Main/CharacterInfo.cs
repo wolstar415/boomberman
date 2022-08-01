@@ -10,7 +10,7 @@ public class CharacterInfo : MonoBehaviour
     private Coroutine textCo;
     public Animator ani;
 
-    public void Chat(string name,string s)
+    public void Chat(string name, string s)
     {
         chatText.text = $"{name} : {s}";
         if (textCo == null)
@@ -22,8 +22,8 @@ public class CharacterInfo : MonoBehaviour
             StopCoroutine(textCo);
             textCo = StartCoroutine(Co_Chat());
         }
+
         chatOb.SetActive(true);
-        
     }
 
     IEnumerator Co_Chat()

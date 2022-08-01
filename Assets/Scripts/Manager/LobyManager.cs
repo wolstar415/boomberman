@@ -1,10 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Playables;
 using UnityEngine.UI;
 
 [Serializable]
@@ -12,11 +10,13 @@ public class SeatInfo
 {
     public string seatname;
     public int characterIdx;
+
     public int Idx;
     //0 준비안함
     //1 준비함
     //2 방장
 }
+
 [Serializable]
 public class RoomInfo
 {
@@ -27,64 +27,65 @@ public class RoomInfo
     public bool isPlaying;
     public int mapIdx;
 }
+
 public class LobyManager : MonoBehaviour
 {
     public static LobyManager inst;
 
-    public RoomInfo[] roomInfos;
-    public List<RoomInfo> roomInfos2;
+    private void Awake()
+    {
+        inst = this;
+    }
 
-    public int currentRoomPage;
 
-    public int maxRoomPage()
+    public RoomInfo[] roomInfos; //전체 방목록
+    public List<RoomInfo> roomInfos2; //입장 가능한 방목록
+
+    public int currentRoomPage; // 현재 페이지
+
+    private int MaxRoomPage() // 최대페이지
     {
         if (roomInfos2.Count == 0)
         {
             return 0;
         }
 
-        if (roomInfos2.Count / 6 > 0)
+        var count = roomInfos2.Count / 6;
+        if (count <= 0) return 0;
+        if (roomInfos2.Count % 6 == 0)
         {
-            if (roomInfos2.Count % 6 == 0)
-            {
-                return roomInfos2.Count / 6 -1;
-            }
-            return roomInfos2.Count / 6;
+            return count - 1;
         }
 
-        return 0;
+        return count;
     }
 
-    public Button[] roomBtn;
+    [Header("방")] public Button[] roomBtn;
     public TextMeshProUGUI[] roomName;
     public TextMeshProUGUI[] roomCnt;
 
-    public Button nextBtn;
-    public Button BeforeBtn;
+    [Header("버튼")] public Button nextBtn; //방 다음 목록
+    public Button beforeBtn; //방 이전 목록
 
-    [Header("채팅")] 
-    public Transform lobyChatParent;
+    [Header("채팅")] public Transform lobyChatParent;
     [SerializeField] private TMP_InputField lobyChatField;
     public List<GameObject> textObs;
-    [Header("방만들기")] 
-    [SerializeField] private TMP_InputField lobyCreateRoomField;
-    [SerializeField] private Toggle[] lobyCreateRoomToogle;
-    
-    
-    private void Awake()
-    {
-        inst = this;
-    }
+    [Header("방만들기")] [SerializeField] private TMP_InputField lobyCreateRoomField;
+    [SerializeField] private Toggle[] lobyCreateRoomToggle;
+
 
     public void OnEndEditEventMethod()
+        //로비창 채팅
     {
         if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
+            //엔터키 누르면
         {
             UpdateChat();
             lobyChatField.ActivateInputField();
             lobyChatField.Select();
         }
     }
+
     public void UpdateChat()
         //채팅을 입력시 이벤트
     {
@@ -94,7 +95,7 @@ public class LobyManager : MonoBehaviour
         }
         //아무것도없다면 리턴
 
-        GameObject ob = ObjectPooler.SpawnFromPool("LobyChat",Vector3.zero);
+        GameObject ob = ObjectPooler.SpawnFromPool("LobyChat", Vector3.zero);
         ob.GetComponent<TextMeshProUGUI>().text = $"> {GameManager.inst.Id} : {lobyChatField.text}";
         textObs.Add(ob);
         SocketManager.inst.socket.Emit("LobyChat", GameManager.inst.Id, lobyChatField.text);
@@ -103,15 +104,18 @@ public class LobyManager : MonoBehaviour
     }
 
     public void LobyTextReset()
+        //로비 채팅 대화청소
     {
         foreach (var ob in textObs)
         {
             ob.gameObject.SetActive(false);
         }
+
         textObs.Clear();
     }
-    
+
     public void RoomClear()
+        //방 전부 청소
     {
         for (int i = 0; i < roomBtn.Length; i++)
         {
@@ -121,28 +125,30 @@ public class LobyManager : MonoBehaviour
         }
 
         nextBtn.interactable = false;
-        BeforeBtn.interactable = false;
+        beforeBtn.interactable = false;
     }
-    
+
     void RoomSet(int currentPage)
+        //방 설정
     {
         if (roomInfos2.Count == 0)
         {
             RoomClear();
             return;
         }
-        if (currentPage < 0 || currentPage > maxRoomPage())
+
+        if (currentPage < 0 || currentPage > MaxRoomPage())
         {
-            Debug.Log("오류");
+            Debug.LogError("오류");
             currentPage = 0;
         }
-        int currentRoomPage = currentPage;
+
         int startIdx = (6 * currentPage);
 
         if (startIdx >= roomInfos2.Count)
         {
-            Debug.Log("오류");
-            return;
+            Debug.LogError("오류");
+            startIdx = 0;
         }
 
         for (int i = 0; i < 6; i++)
@@ -156,12 +162,10 @@ public class LobyManager : MonoBehaviour
             else
             {
                 roomBtn[i].interactable = true;
-                roomName[i].text = roomInfos2[startIdx+i].name;
-                roomCnt[i].text = $"{roomInfos2[startIdx+i].currentP}/{roomInfos2[startIdx+i].maxP}";
+                roomName[i].text = roomInfos2[startIdx + i].name;
+                roomCnt[i].text = $"{roomInfos2[startIdx + i].currentP}/{roomInfos2[startIdx + i].maxP}";
             }
-            
         }
-
     }
 
     public void RoomReset()
@@ -179,23 +183,25 @@ public class LobyManager : MonoBehaviour
             {
                 continue;
             }
+
             roomInfos2.Add(roomInfos[i]);
         }
-        if (currentRoomPage > maxRoomPage()||currentRoomPage<0)
+
+        if (currentRoomPage > MaxRoomPage() || currentRoomPage < 0)
         {
             currentRoomPage = 0;
         }
 
         if (currentRoomPage >= 1)
         {
-            BeforeBtn.interactable = true;
+            beforeBtn.interactable = true;
         }
         else
         {
-            BeforeBtn.interactable = false;
+            beforeBtn.interactable = false;
         }
 
-        if (maxRoomPage() > currentRoomPage)
+        if (MaxRoomPage() > currentRoomPage)
         {
             nextBtn.interactable = true;
         }
@@ -208,18 +214,20 @@ public class LobyManager : MonoBehaviour
     }
 
     public void JoinBtn(int idx)
+        //방 클릭
     {
         if ((currentRoomPage * 6) + idx >= roomInfos2.Count)
         {
             Debug.Log("오류");
             return;
         }
+
         GameManager.inst.loadingOb.SetActive(true);
-        SocketManager.inst.socket.Emit("JoinRoomCheck",roomName[idx].text,GameManager.inst.Id);
-        
+        SocketManager.inst.socket.Emit("JoinRoomCheck", roomName[idx].text, GameManager.inst.Id);
     }
 
     public void MoveRoomBtn(int idx)
+        //방목록버튼 클릭
     {
         if (idx == 0)
         {
@@ -237,41 +245,30 @@ public class LobyManager : MonoBehaviour
     void Start()
     {
         SocketManager.inst.socket.OnUnityThread("LobyChatGet", data =>
+            //로비 채팅
         {
-            GameObject ob = ObjectPooler.SpawnFromPool("LobyChat",Vector3.zero);
-            ob.GetComponent<TextMeshProUGUI>().text = $"{data.GetValue(0).GetString()} : {data.GetValue(1).GetString()}";
+            GameObject ob = ObjectPooler.SpawnFromPool("LobyChat", Vector3.zero);
+            ob.GetComponent<TextMeshProUGUI>().text =
+                $"{data.GetValue(0).GetString()} : {data.GetValue(1).GetString()}";
             textObs.Add(ob);
         });
+
+
         SocketManager.inst.socket.OnUnityThread("CreateRoom", data =>
+            //방 생성
         {
-            GameManager.inst.loadingOb.SetActive(false);
-            GameManager.inst.lobyOb.SetActive(false);
-            GameManager.inst.roomOb.SetActive(true);
-            GameManager.inst.CreateRoomOb.SetActive(false);
             GameManager.inst.room = lobyCreateRoomField.text;
             RoomManager.inst.HostStartFunc();
-            GameManager.inst.characterIdx = 0;
-            GameManager.inst.isPlaying = false;
-            RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
-            RoomManager.inst.ArrowSet(0);
-            BoomberManager.inst.gameWait = 0;
-
-
         });
         SocketManager.inst.socket.OnUnityThread("RoomReset", data =>
+            //방정보들 리셋
         {
             string s = data.GetValue(0).ToString();
-            if (s != "")
-            {
-                roomInfos = JsonConvert.DeserializeObject<RoomInfo[]>(s);
-            }
-            else
-            {
-                roomInfos = new RoomInfo[0];
-            }
+            roomInfos = s != "" ? JsonConvert.DeserializeObject<RoomInfo[]>(s) : Array.Empty<RoomInfo>();
             RoomReset();
         });
         SocketManager.inst.socket.OnUnityThread("Join", data =>
+            //참가
         {
             GameManager.inst.loadingOb.SetActive(false);
             GameManager.inst.lobyOb.SetActive(false);
@@ -285,28 +282,27 @@ public class LobyManager : MonoBehaviour
             GameManager.inst.isPlaying = false;
             RoomManager.inst.ArrowSet(0);
             BoomberManager.inst.gameWait = 0;
-
         });
     }
 
     public void CreateFunc1()
-    //방만들기 버튼
+        //방만들기 버튼
     {
         GameManager.inst.CreateRoomOb.SetActive(true);
-        lobyCreateRoomToogle[0].isOn = true;
+        lobyCreateRoomToggle[0].isOn = true;
         lobyCreateRoomField.text = $"{GameManager.inst.Id}의 방";
         lobyCreateRoomField.Select();
     }
 
     public void CreatRoomBtn()
+    //방생성버튼
     {
         if (lobyCreateRoomField.text == "")
         {
             return;
         }
-        GameManager.inst.loadingOb.SetActive(true);
-        SocketManager.inst.socket.Emit("CreateRoomCheck",lobyCreateRoomField.text,GameManager.inst.Id);
-    }
-    
 
+        GameManager.inst.loadingOb.SetActive(true);
+        SocketManager.inst.socket.Emit("CreateRoomCheck", lobyCreateRoomField.text, GameManager.inst.Id);
+    }
 }

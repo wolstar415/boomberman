@@ -16,38 +16,35 @@ public class RoomManager : MonoBehaviour
     public GameObject mapReadyBtn;
     public GameObject kickOb;
     public Color[] colors;
-    [Header("map")] 
-    [SerializeField] private Image mapIcon;
+    [Header("map")] [SerializeField] private Image mapIcon;
     [SerializeField] private TextMeshProUGUI mapName;
     [SerializeField] private TextMeshProUGUI mapMaxCnt;
     [SerializeField] private Sprite[] mapIcons;
     [SerializeField] private string[] mapNames;
     [SerializeField] private string[] mapCnts;
     [SerializeField] [Multiline(5)] private string[] mapInfos;
-    [Header("Slot")]
-    public Sprite xIcon;
+    [Header("Slot")] public Sprite xIcon;
     public Sprite[] Icons;
     public Image[] slotIcon;
     public TextMeshProUGUI[] slotName;
     public TextMeshProUGUI[] slotText;
-    [Header("채팅")]
-    public Transform roomChatParent;
+    [Header("채팅")] public Transform roomChatParent;
     [SerializeField] private TMP_InputField roomChatField;
     public List<GameObject> textObs;
     [Header("맵선택")] public Image mapSelectIcon;
     public TextMeshProUGUI mapSelectCntText;
     public TextMeshProUGUI mapSelectInfoText;
     public GameObject[] arrows;
-    [Header("캐릭터정보")] 
-    public GameObject characterInfoOb;
+    [Header("캐릭터정보")] public GameObject characterInfoOb;
     public Image[] BombImages;
     public Image[] PowerImages;
     public Image[] SpeedImages;
     public Color[] infoColors;
 
     public int tempMapSelectIdx = 0;
-    
+
     public RoomInfo myRoomInfo;
+
     private void Awake()
     {
         inst = this;
@@ -55,7 +52,6 @@ public class RoomManager : MonoBehaviour
 
     public void ReadyBtn()
     {
-
         int idx = 0;
         for (int i = 0; i < slotName.Length; i++)
         {
@@ -65,9 +61,8 @@ public class RoomManager : MonoBehaviour
                 break;
             }
         }
-        
-        SocketManager.inst.socket.Emit("RoomReady",GameManager.inst.room,idx);
-        
+
+        SocketManager.inst.socket.Emit("RoomReady", GameManager.inst.room, idx);
     }
 
     public void ArrowSet(int idx)
@@ -76,10 +71,10 @@ public class RoomManager : MonoBehaviour
         {
             arrows[i].SetActive(false);
         }
-        
+
         arrows[idx].SetActive(true);
     }
-    
+
     public void StartBtn()
     {
         if (!GameManager.inst.RoomHost)
@@ -90,7 +85,7 @@ public class RoomManager : MonoBehaviour
         bool b = false;
         for (int i = 0; i < myRoomInfo.seatInfos.Length; i++)
         {
-            if (myRoomInfo.seatInfos[i].seatname != ""&&myRoomInfo.seatInfos[i].seatname != "막음")
+            if (myRoomInfo.seatInfos[i].seatname != "" && myRoomInfo.seatInfos[i].seatname != "막음")
             {
                 if (myRoomInfo.seatInfos[i].Idx == 0)
                 {
@@ -99,10 +94,12 @@ public class RoomManager : MonoBehaviour
                 }
             }
         }
+
         if (b)
         {
             return;
         }
+
         int map = 0;
         if (GameManager.inst.mapIdx == 0)
         {
@@ -112,6 +109,7 @@ public class RoomManager : MonoBehaviour
         {
             map = GameManager.inst.mapIdx - 1;
         }
+
         int idx = 0;
         for (int i = 0; i < slotName.Length; i++)
         {
@@ -129,9 +127,9 @@ public class RoomManager : MonoBehaviour
         }
         else
         {
-            BoomberManager.inst.characterIdx = GameManager.inst.characterIdx-1;
+            BoomberManager.inst.characterIdx = GameManager.inst.characterIdx - 1;
         }
-        
+
 
         BoomberManager.inst.mapIdxGo = map;
         BoomberManager.inst.mapGenerator.MapCreate();
@@ -139,12 +137,12 @@ public class RoomManager : MonoBehaviour
         BoomberManager.inst.mapGenerator.CharacterRandomFunc();
         string s1 = JsonConvert.SerializeObject(BoomberManager.inst.itemIdx);
         string s2 = JsonConvert.SerializeObject(BoomberManager.inst.mapGenerator.randomPos);
-        SocketManager.inst.socket.Emit("GameStart",GameManager.inst.room,s1,s2,map);
+        SocketManager.inst.socket.Emit("GameStart", GameManager.inst.room, s1, s2, map);
         GameManager.inst.loadingOb.SetActive(true);
-        SocketManager.inst.socket.Emit("GameWait",GameManager.inst.room);
+        SocketManager.inst.socket.Emit("GameWait", GameManager.inst.room);
         //BoomberManager.inst.mapGenerator.StartFunc();
-
     }
+
     public void SelectMapOpenBtn()
     {
         tempMapSelectIdx = 0;
@@ -161,7 +159,7 @@ public class RoomManager : MonoBehaviour
     public void SelectMapBtn()
     {
         MapInfoSetting(tempMapSelectIdx);
-        SocketManager.inst.socket.Emit("MapSetting",GameManager.inst.room,tempMapSelectIdx);
+        SocketManager.inst.socket.Emit("MapSetting", GameManager.inst.room, tempMapSelectIdx);
     }
 
     public void SelectMapChoice(int idx)
@@ -173,9 +171,18 @@ public class RoomManager : MonoBehaviour
 
     public void HostStartFunc()
     {
+        mapStartBtn.GetComponent<Button>().interactable = false;
+        GameManager.inst.loadingOb.SetActive(false);
+        GameManager.inst.lobyOb.SetActive(false);
+        GameManager.inst.roomOb.SetActive(true);
+        GameManager.inst.CreateRoomOb.SetActive(false);
+        GameManager.inst.characterIdx = 0;
+        GameManager.inst.isPlaying = false;
+        ArrowSet(0);
+        BoomberManager.inst.gameWait = 0;
         
         GameManager.inst.RoomHost = true;
-        RoomManager.inst.MapInfoSetting(0);
+        MapInfoSetting(0);
         slotName[0].text = GameManager.inst.Id;
         slotText[0].text = "방장";
         slotText[0].color = colors[2];
@@ -204,7 +211,7 @@ public class RoomManager : MonoBehaviour
         }
 
         myRoomInfo.seatInfos[idx].characterIdx = characterIdx;
-        SocketManager.inst.socket.Emit("CharacterChange",GameManager.inst.room,idx,characterIdx);
+        SocketManager.inst.socket.Emit("CharacterChange", GameManager.inst.room, idx, characterIdx);
         GameManager.inst.characterIdx = characterIdx;
         slotIcon[idx].sprite = Icons[characterIdx];
         ArrowSet(characterIdx);
@@ -218,21 +225,20 @@ public class RoomManager : MonoBehaviour
             {
                 return;
             }
-            
+
             if (slotIcon[idx].sprite == xIcon)
             {
-                SocketManager.inst.socket.Emit("SlotOpen",GameManager.inst.room,idx);
-
+                SocketManager.inst.socket.Emit("SlotOpen", GameManager.inst.room, idx);
             }
             else if (slotName[idx].text == "")
             {
-                SocketManager.inst.socket.Emit("SlotClose",GameManager.inst.room,idx);
+                SocketManager.inst.socket.Emit("SlotClose", GameManager.inst.room, idx);
 
                 //막기
             }
             else if (slotName[idx].text != "")
             {
-                SocketManager.inst.socket.Emit("SlotKick",GameManager.inst.room,slotName[idx].text,idx);
+                SocketManager.inst.socket.Emit("SlotKick", GameManager.inst.room, slotName[idx].text, idx);
 
                 //킥
             }
@@ -243,10 +249,12 @@ public class RoomManager : MonoBehaviour
             {
                 return;
             }
+
             if (slotName[idx].text != "")
             {
                 return;
             }
+
             if (slotName[idx].text == "")
             {
                 int check = 0;
@@ -258,12 +266,10 @@ public class RoomManager : MonoBehaviour
                         break;
                     }
                 }
-                SocketManager.inst.socket.Emit("SlotMove",GameManager.inst.room,check,idx);
+
+                SocketManager.inst.socket.Emit("SlotMove", GameManager.inst.room, check, idx);
             }
         }
-        
-        
-        
     }
 
     public void RoomLeave()
@@ -277,7 +283,8 @@ public class RoomManager : MonoBehaviour
                 break;
             }
         }
-        SocketManager.inst.socket.Emit("RoomLeave",GameManager.inst.room,idx);
+
+        SocketManager.inst.socket.Emit("RoomLeave", GameManager.inst.room, idx);
         RoomLeaveFunc();
         GameManager.inst.roomOb.SetActive(false);
         GameManager.inst.lobyOb.SetActive(true);
@@ -322,24 +329,24 @@ public class RoomManager : MonoBehaviour
                 {
                     slotText[i].text = "방장";
                     slotText[i].color = colors[2];
-                    if (!GameManager.inst.RoomHost&&slotName[i].text==GameManager.inst.Id)
+                    if (!GameManager.inst.RoomHost && slotName[i].text == GameManager.inst.Id)
                     {
                         GameManager.inst.RoomHost = true;
                     }
                 }
+
                 slotIcon[i].sprite = Icons[room.seatInfos[i].characterIdx];
             }
-            
         }
+
         MapInfoSetting(myRoomInfo.mapIdx);
-        if (GameManager.inst.RoomHost&&readyCheck==0&&readyCheck2>=1)
+        if (GameManager.inst.RoomHost && readyCheck == 0 && readyCheck2 >= 1)
         {
             RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = true;
         }
         else
         {
             RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
-            
         }
     }
 
@@ -420,7 +427,7 @@ public class RoomManager : MonoBehaviour
         {
             if (GameManager.inst.Id == data.GetValue(0).GetString())
             {
-                SocketManager.inst.socket.Emit("KickCheck",GameManager.inst.room);
+                SocketManager.inst.socket.Emit("KickCheck", GameManager.inst.room);
 
                 kickOb.SetActive(true);
                 RoomLeaveFunc();
@@ -428,8 +435,9 @@ public class RoomManager : MonoBehaviour
         });
         SocketManager.inst.socket.OnUnityThread("RoomChatGet", data =>
         {
-            GameObject ob = ObjectPooler.SpawnFromPool("RoomChat",Vector3.zero);
-            ob.GetComponent<TextMeshProUGUI>().text = $"{data.GetValue(0).GetString()} : {data.GetValue(1).GetString()}";
+            GameObject ob = ObjectPooler.SpawnFromPool("RoomChat", Vector3.zero);
+            ob.GetComponent<TextMeshProUGUI>().text =
+                $"{data.GetValue(0).GetString()} : {data.GetValue(1).GetString()}";
             textObs.Add(ob);
         });
         SocketManager.inst.socket.OnUnityThread("GameStart2", data =>
@@ -451,31 +459,26 @@ public class RoomManager : MonoBehaviour
             }
             else
             {
-                BoomberManager.inst.characterIdx = GameManager.inst.characterIdx-1;
+                BoomberManager.inst.characterIdx = GameManager.inst.characterIdx - 1;
             }
+
             BoomberManager.inst.mapIdxGo = data.GetValue(2).GetInt32();
             BoomberManager.inst.itemIdx = JsonConvert.DeserializeObject<List<int>>(data.GetValue(0).ToString());
-            BoomberManager.inst.mapGenerator.randomPos = JsonConvert.DeserializeObject<List<int>>(data.GetValue(1).ToString());
+            BoomberManager.inst.mapGenerator.randomPos =
+                JsonConvert.DeserializeObject<List<int>>(data.GetValue(1).ToString());
             BoomberManager.inst.mapGenerator.MapCreate();
-            SocketManager.inst.socket.Emit("GameWait",GameManager.inst.room);
+            SocketManager.inst.socket.Emit("GameWait", GameManager.inst.room);
             GameManager.inst.loadingOb.SetActive(true);
             //BoomberManager.inst.mapGenerator.StartFunc();
-
         });
-        
-        
-        
-        
-        
     }
 
     public void RoomLeaveFunc()
     {
         GameManager.inst.room = "";
         GameManager.inst.RoomHost = false;
-
     }
-    
+
     public void OnEndEditEventMethod()
     {
         if (GameManager.inst.playerKey.UIChat.ChatEnd.triggered)
@@ -501,7 +504,7 @@ public class RoomManager : MonoBehaviour
             {
                 PowerImages[i].color = infoColors[0];
             }
-            else if(i<=maxPower-1)
+            else if (i <= maxPower - 1)
 
             {
                 PowerImages[i].color = infoColors[1];
@@ -511,13 +514,14 @@ public class RoomManager : MonoBehaviour
                 PowerImages[i].color = infoColors[2];
             }
         }
+
         for (int i = 0; i < BombImages.Length; i++)
         {
             if (i <= startBomb - 1)
             {
                 BombImages[i].color = infoColors[0];
             }
-            else if(i<=maxBomb-1)
+            else if (i <= maxBomb - 1)
 
             {
                 BombImages[i].color = infoColors[1];
@@ -527,13 +531,14 @@ public class RoomManager : MonoBehaviour
                 BombImages[i].color = infoColors[2];
             }
         }
+
         for (int i = 0; i < SpeedImages.Length; i++)
         {
             if (i <= startSpeed - 1)
             {
                 SpeedImages[i].color = infoColors[0];
             }
-            else if(i<=maxSpeed-1)
+            else if (i <= maxSpeed - 1)
 
             {
                 SpeedImages[i].color = infoColors[1];
@@ -543,9 +548,10 @@ public class RoomManager : MonoBehaviour
                 SpeedImages[i].color = infoColors[2];
             }
         }
-        
+
         characterInfoOb.SetActive(true);
     }
+
     public void UpdateChat()
         //채팅을 입력시 이벤트
     {
@@ -555,12 +561,11 @@ public class RoomManager : MonoBehaviour
         }
         //아무것도없다면 리턴
 
-        GameObject ob = ObjectPooler.SpawnFromPool("RoomChat",Vector3.zero);
+        GameObject ob = ObjectPooler.SpawnFromPool("RoomChat", Vector3.zero);
         ob.GetComponent<TextMeshProUGUI>().text = $"> {GameManager.inst.Id} : {roomChatField.text}";
         textObs.Add(ob);
-        SocketManager.inst.socket.Emit("RoomChat", GameManager.inst.Id, roomChatField.text,GameManager.inst.room);
+        SocketManager.inst.socket.Emit("RoomChat", GameManager.inst.Id, roomChatField.text, GameManager.inst.room);
         //딴사람들에게도 채팅내용을 받아야하니 이벤트를 보냅니다.
         roomChatField.text = "";
     }
-
 }

@@ -11,6 +11,7 @@ public enum EItemType
     Power,
     Bomb
 }
+
 public class Item : MonoBehaviour
 {
     public EItemType itemType;
@@ -40,7 +41,8 @@ public class Item : MonoBehaviour
                 }
             }
         }
+
         gameObject.SetActive(false);
-        SocketManager.inst.socket.Emit("ItemRemove",GameManager.inst.room,Idx);
+        SocketManager.inst.socket.Emit("ItemRemove", GameManager.inst.room, Idx);
     }
 }

@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using SocketIOClient;
 using UnityEngine;
@@ -26,41 +29,38 @@ public class SocketManager : MonoBehaviour
         }
     }
 
-    
 
+    async UniTask Start()
+    {
+        Setting();
 
-     void Start()
+        await socket.ConnectAsync();
+        SceneManager.LoadScene("Main");
+    }
+
+    public void Setting()
     {
         var uri = new Uri("http://127.0.0.1:7777");
+
         socket = new SocketIOUnity(uri, new SocketIOOptions
         {
             Query = new Dictionary<string, string>
             {
                 { "token", "UNITY" },
-                { "name", "boomberman" },
+                { "name", "bomberman" },
                 { "version", "0.1" }
             },
             Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
         });
-        socket.Connect();
 
-        socket.OnConnected += (sender, e) =>
-        {
-            UnityMainThreadDispatcher.Instance().Enqueue(() => { SceneManager.LoadScene("Main"); });
-        };
-        socket.OnDisconnected += (sender, e) => { Debug.Log("disconnect: " + e); };
-        socket.Disconnect();
+        socket.OnConnected += (sender, e) => { Debug.Log("연결 성공"); };
+
+        socket.OnDisconnected += (sender, e) => { Debug.Log("연결 끊김: " + e); };
     }
 
-
-    [ContextMenu ("강제로끊기")]
-    public void dis()
-    {
-        socket.Disconnect();
-    }
-    
     private void OnDestroy()
     {
         socket.Disconnect();
+        socket.Dispose();
     }
 }

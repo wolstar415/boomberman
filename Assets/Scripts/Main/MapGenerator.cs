@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
@@ -15,6 +13,7 @@ public class MapInfo
     public int itemSpeedCnt;
     public int playerMax;
 }
+
 public class MapGenerator : MonoBehaviour
 {
     public Tilemap[] maps;
@@ -31,17 +30,13 @@ public class MapGenerator : MonoBehaviour
 
     public GameObject groundTiles;
     public GameObject outWallTiles;
-    
+
     public List<int> randomPos;
+
     public List<int> randomPosTemp;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-        //MapCreate();
-    }
 
     public void StartFunc()
+    //맵 실행
     {
         BoomberManager.inst.itemDictionary.Clear();
         BoomberManager.inst.IsDead = false;
@@ -52,6 +47,7 @@ public class MapGenerator : MonoBehaviour
         {
             tile.SetActive(true);
         }
+
         groundTiles.SetActive(true);
         outWallTiles.SetActive(true);
         for (int i = 0; i < NetworkManager.inst.players.Length; i++)
@@ -61,11 +57,13 @@ public class MapGenerator : MonoBehaviour
                 NetworkManager.inst.players[i].SetActive(true);
             }
         }
+
         BoomberManager.inst.IsStart = true;
         GameManager.inst.isPlaying = true;
     }
 
     public void EndFunc()
+    //맵 끝
     {
         BoomberManager.inst.StopAllCoroutines();
         BoomberManager.inst.timeText.text = "GameOver";
@@ -78,8 +76,10 @@ public class MapGenerator : MonoBehaviour
             {
                 Destroy(NetworkManager.inst.players[i]);
             }
+
             NetworkManager.inst.players[i] = null;
         }
+
         BoomberManager.inst.IsStart = false;
         GameManager.inst.roomOb.SetActive(true);
         GameManager.inst.playOb.SetActive(false);
@@ -87,13 +87,14 @@ public class MapGenerator : MonoBehaviour
         BoomberManager.inst.gameWait = 0;
         if (GameManager.inst.RoomHost)
         {
-            SocketManager.inst.socket.Emit("PlayEnd",GameManager.inst.room);
+            SocketManager.inst.socket.Emit("PlayEnd", GameManager.inst.room);
         }
 
         BoomberManager.inst.player = null;
     }
 
     public void CharacterRandomFunc()
+    //캐릭터 스폰지역 설정
     {
         randomPos.Clear();
         randomPosTemp.Clear();
@@ -103,7 +104,7 @@ public class MapGenerator : MonoBehaviour
             randomPosTemp.Add(i);
         }
 
-        while (randomPosTemp.Count!=0)
+        while (randomPosTemp.Count != 0)
         {
             int ran = Random.Range(0, randomPosTemp.Count);
             randomPos.Add(randomPosTemp[ran]);
@@ -112,26 +113,31 @@ public class MapGenerator : MonoBehaviour
     }
 
     public void MapCreate()
+    //맵 생성
     {
         temp_pos.Clear();
         itemList.Clear();
         int itemAmount = 0;
-        foreach(Vector3Int pos in maps[BoomberManager.inst.mapIdxGo].cellBounds.allPositionsWithin)
+        foreach (Vector3Int pos in maps[BoomberManager.inst.mapIdxGo].cellBounds.allPositionsWithin)
+            //타일맵들을 전부 확인합니다.
         {
             //offset 부분
-            
-            
-            // 해당 좌표에 타일이 없으면 넘어간다.
-            if(!maps[BoomberManager.inst.mapIdxGo].HasTile(pos)) continue;
-            // 해당 좌표의 타일을 얻는다.
-            TileBase tile = maps[BoomberManager.inst.mapIdxGo].GetTile(pos);
-            Vector3 createPos = maps[BoomberManager.inst.mapIdxGo].CellToWorld(pos)+offset;
 
-            if (tile==respawnTile)
+
+            
+            if (!maps[BoomberManager.inst.mapIdxGo].HasTile(pos)) continue;
+            // 해당 좌표에 타일이 없으면 넘어갑니다.
+            
+            TileBase tile = maps[BoomberManager.inst.mapIdxGo].GetTile(pos);
+            // 해당 좌표의 타일을 얻습니다.
+            Vector3 createPos = maps[BoomberManager.inst.mapIdxGo].CellToWorld(pos) + offset;
+
+            if (tile == respawnTile)
             {
                 temp_pos.Add(createPos);
                 continue;
             }
+
             int idx = 0;
 
             for (int i = 0; i < tiles.Length; i++)
@@ -142,7 +148,9 @@ public class MapGenerator : MonoBehaviour
                     break;
                 }
             }
-            GameObject ob= ObjectPooler.SpawnFromPool(tilePrefabs[idx], createPos, quaternion.identity);
+
+            GameObject ob = ObjectPooler.SpawnFromPool(tilePrefabs[idx], createPos, Quaternion.identity);
+            //타일 오브젝트 생성
             tileObs.Add(ob);
             ob.SetActive(false);
             if (ob.TryGetComponent(out Brick b))
@@ -153,11 +161,11 @@ public class MapGenerator : MonoBehaviour
                 brickObs.Add(ob);
             }
         }
+
         BoomberManager.inst.respawnPos = temp_pos.ToList();
-        //maps[GameManager.inst.mapIdx].gameObject.SetActive(false);
     }
 
-    public void MapDestory()
+    private void MapDestory()
     {
         brickObs.Clear();
         foreach (var ob in tileObs)
@@ -169,11 +177,13 @@ public class MapGenerator : MonoBehaviour
         {
             item.SetActive(false);
         }
+
         tileObs.Clear();
     }
 
 
     public void ItemSetting()
+    //벽에게 아이템을 설정해줍니다. 파괴하면 아이템을 줌
     {
         itemListTemp.Clear();
         int powerCnt = mapInfos[BoomberManager.inst.mapIdxGo].itemPowerCnt;
@@ -192,6 +202,7 @@ public class MapGenerator : MonoBehaviour
             itemList[ran] = 1;
             itemListTemp.RemoveAt(ran);
         }
+
         for (int i = 0; i < bombCnt; i++)
         {
             if (itemListTemp.Count == 0)
@@ -203,6 +214,7 @@ public class MapGenerator : MonoBehaviour
             itemList[ran] = 2;
             itemListTemp.RemoveAt(ran);
         }
+
         for (int i = 0; i < speedCnt; i++)
         {
             if (itemListTemp.Count == 0)
@@ -218,5 +230,4 @@ public class MapGenerator : MonoBehaviour
 
         BoomberManager.inst.itemIdx = itemList.ToList();
     }
-    
 }

@@ -8,16 +8,16 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-
     public static GameManager inst;
 
     public GameObject loadingOb;
     public GameObject warningOb;
+
     public TextMeshProUGUI warningText;
+
     //public PlayerInput input;
     public PlayerKey playerKey;
-    [Header("정보")] 
-    public string Id;
+    [Header("정보")] public string Id;
     public string room;
     public int roomSlot;
     public int victory;
@@ -28,8 +28,7 @@ public class GameManager : MonoBehaviour
     public int mapIdx = 0;
     public bool isPlaying;
 
-    [Header("패널들")] 
-    public GameObject loginOb;
+    [Header("패널들")] public GameObject loginOb;
     public GameObject createOb;
     public GameObject lobyOb;
     public GameObject CreateRoomOb;
@@ -40,7 +39,6 @@ public class GameManager : MonoBehaviour
     {
         inst = this;
         playerKey = new PlayerKey();
-        
     }
 
     private void OnEnable()
@@ -55,10 +53,7 @@ public class GameManager : MonoBehaviour
 
     public bool RoomHost
     {
-        get
-        {
-            return _RoomHost;
-        }
+        get { return _RoomHost; }
         set
         {
             RoomManager.inst.mapStartBtn.SetActive(value);
@@ -70,11 +65,7 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        SocketManager.inst.socket.OnUnityThread("Warnning",(data) =>
-        {
-            Warnning(data.GetValue(0).GetString());
-            
-        });
+        SocketManager.inst.socket.OnUnityThread("Warnning", (data) => { Warnning(data.GetValue(0).GetString()); });
     }
 
     public void Warnning(string s)
