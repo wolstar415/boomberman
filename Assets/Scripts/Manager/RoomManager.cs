@@ -288,6 +288,8 @@ public class RoomManager : MonoBehaviour
         RoomLeaveFunc();
         GameManager.inst.roomOb.SetActive(false);
         GameManager.inst.lobyOb.SetActive(true);
+        LobyManager.inst.LobyTextReset();
+        RoomTextReset();
     }
 
     public void SlotReset(RoomInfo room)
@@ -349,62 +351,7 @@ public class RoomManager : MonoBehaviour
             RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
         }
     }
-
-    // public void SlotReSet(int idx)
-    // {
-    //     int readyCheck = 0;
-    //     int readyCheck2 = 0;
-    //     for (int i = 0; i < 4; i++)
-    //     {
-    //         if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "막음")
-    //         {
-    //             slotName[i].text = "";
-    //             slotText[i].text = "준비";
-    //             slotText[i].color = colors[0];
-    //             slotIcon[i].sprite = xIcon;
-    //         }
-    //         else if (LobyManager.inst.roomInfos[idx].seatInfos[i].seatname == "")
-    //         {
-    //             slotName[i].text = "";
-    //             slotText[i].text = "준비";
-    //             slotText[i].color = colors[0];
-    //             slotIcon[i].sprite = null;
-    //         }
-    //         else
-    //         {
-    //             slotName[i].text = LobyManager.inst.roomInfos[idx].seatInfos[i].seatname;
-    //             if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 0)
-    //             {
-    //                 slotText[i].text = "준비";
-    //                 readyCheck++;
-    //                 slotText[i].color = colors[0];
-    //             }
-    //             else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 1)
-    //             {
-    //                 slotText[i].text = "준비";
-    //                 readyCheck2++;
-    //                 slotText[i].color = colors[1];
-    //             }
-    //             else if (LobyManager.inst.roomInfos[idx].seatInfos[i].Idx == 2)
-    //             {
-    //                 slotText[i].text = "방장";
-    //                 slotText[i].color = colors[2];
-    //             }
-    //             slotIcon[i].sprite = Icons[LobyManager.inst.roomInfos[idx].seatInfos[i].characterIdx];
-    //         }
-    //         
-    //     }
-    //     MapInfoSetting(check.mapIdx);
-    //     if (GameManager.inst.RoomHost&&readyCheck==0&&readyCheck2>=1)
-    //     {
-    //         RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = true;
-    //     }
-    //     else
-    //     {
-    //         RoomManager.inst.mapStartBtn.GetComponent<Button>().interactable = false;
-    //         
-    //     }
-    // }
+    
 
     public void MapInfoSetting(int idx)
     {
@@ -551,7 +498,16 @@ public class RoomManager : MonoBehaviour
 
         characterInfoOb.SetActive(true);
     }
+    public void RoomTextReset()
+        //로비 채팅 대화청소
+    {
+        foreach (var ob in textObs)
+        {
+            ob.gameObject.SetActive(false);
+        }
 
+        textObs.Clear();
+    }
     public void UpdateChat()
         //채팅을 입력시 이벤트
     {

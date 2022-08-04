@@ -35,7 +35,7 @@ public class Brick : MonoBehaviour
     {
         Vector3 pos = transform.position + direction;
         float t = 0;
-        while (pos != transform.position)
+        while (Vector3.Distance(transform.position,pos)>0.1f)
         {
             if (t >= 1f || isMoving == false)
             {

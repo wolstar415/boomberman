@@ -129,10 +129,11 @@ public class MoveMentController : MonoBehaviour
                             {
                                 if (b.isMoving == false)
                                 {
-                                    b.Move(direction);
+                                    moveOb = null;
                                     var position = b.transform.position;
                                     SocketManager.inst.socket.Emit("BrickMove", GameManager.inst.room, position.x,
                                         position.y, direction.x, direction.y, b.Idx);
+                                    b.Move(direction);
                                 }
                             }
                         }
@@ -174,10 +175,10 @@ public class MoveMentController : MonoBehaviour
                     info.ani.SetBool(IsMoving, move);
                 }
 
-                NetworkManager.inst.players[i].transform.position = pos;
+                //NetworkManager.inst.players[i].transform.position = pos;
 
-                // NetworkManager.inst.players[i].transform.position =
-                //     Vector3.Lerp(NetworkManager.inst.players[i].transform.position, pos, Time.deltaTime * 20);
+                 NetworkManager.inst.players[i].transform.position =
+                     Vector3.Lerp(NetworkManager.inst.players[i].transform.position, pos, Time.deltaTime * 20);
             }
         }
 
